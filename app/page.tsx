@@ -1,103 +1,235 @@
 import Image from "next/image";
+import Link from "next/link";
+import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/nextjs";
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="flex flex-col min-h-screen">
+      {/* Hero Section */}
+      <section className="py-20 px-4 md:px-8">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-10">
+          <div className="flex-1 space-y-6">
+            <h1 className="text-4xl md:text-5xl font-bold leading-tight">
+              Bringing Transparency to Venture Capital
+            </h1>
+            <p className="text-xl text-gray-600 dark:text-gray-300">
+              A trusted platform for founders to rate and review VCs anonymously.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <SignedOut>
+                <Link 
+                  href="/sign-up" 
+                  className="px-6 py-3 rounded-md bg-black dark:bg-white text-white dark:text-black font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
+                >
+                  Write a Review
+                </Link>
+                
+                <Link 
+                  href="/sign-up" 
+                  className="px-6 py-3 rounded-md border border-gray-300 dark:border-gray-700 font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                  Explore Reviews
+                </Link>
+              </SignedOut>
+              
+              <SignedIn>
+                <Link 
+                  href="/reviews/new"
+                  className="px-6 py-3 rounded-md bg-black dark:bg-white text-white dark:text-black font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
+                >
+                  Write a Review
+                </Link>
+                
+                <Link 
+                  href="/reviews"
+                  className="px-6 py-3 rounded-md border border-gray-300 dark:border-gray-700 font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                  Explore Reviews
+                </Link>
+              </SignedIn>
+            </div>
+          </div>
+          <div className="flex-1 relative h-64 md:h-96 w-full">
+            {/* Placeholder for hero illustration */}
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-lg flex items-center justify-center">
+              <svg className="w-32 h-32 text-gray-400 dark:text-gray-600" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 100-16 8 8 0 000 16zm-5-7h10v-2H7v2zm0-4h10V7H7v2z"></path>
+              </svg>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </section>
+
+      {/* Problem / Why It Matters Section */}
+      <section className="py-16 bg-gray-50 dark:bg-gray-900 px-4 md:px-8">
+        <div className="max-w-6xl mx-auto space-y-8">
+          <h2 className="text-3xl font-bold text-center">Why It Matters</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              {
+                title: "Lack of Transparency",
+                description: "The VC world operates behind closed doors.",
+              },
+              {
+                title: "Backchannel DMs",
+                description: "Founders rely on private messages to assess investors.",
+              },
+              {
+                title: "Unreported Experiences",
+                description: "Negative experiences often go unreported.",
+              },
+              {
+                title: "Founders Need a Voice",
+                description: "Founders deserve transparency and accountability.",
+              },
+            ].map((item, index) => (
+              <div 
+                key={index} 
+                className="p-6 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow"
+              >
+                <h3 className="font-medium text-lg mb-2">{item.title}</h3>
+                <p className="text-gray-600 dark:text-gray-300">{item.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="py-16 px-4 md:px-8">
+        <div className="max-w-6xl mx-auto space-y-8">
+          <h2 className="text-3xl font-bold text-center">How It Works</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              {
+                step: "1",
+                title: "Sign Up & Verify",
+                description: "Sign up & verify your identity confidentially.",
+              },
+              {
+                step: "2",
+                title: "Submit Reviews",
+                description: "Submit anonymized reviews of VCs.",
+              },
+              {
+                step: "3",
+                title: "Browse Insights",
+                description: "Browse insights & find the right partner.",
+              },
+              {
+                step: "4",
+                title: "Build Reputations",
+                description: "VCs can respond & build better reputations.",
+              },
+            ].map((item, index) => (
+              <div key={index} className="relative">
+                <div className="w-12 h-12 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center font-bold text-xl mb-4">
+                  {item.step}
+                </div>
+                <h3 className="font-medium text-lg mb-2">{item.title}</h3>
+                <p className="text-gray-600 dark:text-gray-300">{item.description}</p>
+                {index < 3 && (
+                  <div className="hidden lg:block absolute top-6 left-16 w-[calc(100%-2rem)] h-0.5 bg-gray-200 dark:bg-gray-700"></div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Key Features */}
+      <section className="py-16 bg-gray-50 dark:bg-gray-900 px-4 md:px-8">
+        <div className="max-w-6xl mx-auto space-y-8">
+          <h2 className="text-3xl font-bold text-center">Key Features</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {[
+              {
+                title: "Anonymous & Verified Reviews",
+                description: "Share your experiences without revealing your identity, while our verification process ensures all reviews are from actual founders.",
+              },
+              {
+                title: "Comprehensive Ratings",
+                description: "Rate VCs on multiple criteria: responsiveness, fairness, support, and more.",
+              },
+              {
+                title: "Community-driven Transparency",
+                description: "Contribute to a more transparent ecosystem that benefits all founders.",
+              },
+              {
+                title: "Optional Q&A",
+                description: "Ask questions and get insights from other founders about their experiences.",
+              },
+            ].map((item, index) => (
+              <div 
+                key={index} 
+                className="p-6 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow"
+              >
+                <h3 className="font-medium text-lg mb-2">{item.title}</h3>
+                <p className="text-gray-600 dark:text-gray-300">{item.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-16 px-4 md:px-8">
+        <div className="max-w-6xl mx-auto space-y-8">
+          <h2 className="text-3xl font-bold text-center">Community Voices</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                quote: "This platform gave me the confidence to choose the right investors for my startup. The transparency is game-changing.",
+                author: "Sarah J., Founder",
+              },
+              {
+                quote: "I wish I had this resource when I was raising my seed round. It would have saved me from some painful investor relationships.",
+                author: "Michael T., CEO",
+              },
+              {
+                quote: "As someone who values honest feedback, I appreciate being able to see authentic reviews from other founders.",
+                author: "Alex R., Entrepreneur",
+              },
+            ].map((item, index) => (
+              <div 
+                key={index} 
+                className="p-6 rounded-lg bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700"
+              >
+                <p className="text-gray-600 dark:text-gray-300 mb-4 italic">"{item.quote}"</p>
+                <p className="font-medium">{item.author}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Get Started CTA */}
+      <section className="py-20 px-4 md:px-8 bg-black dark:bg-white text-white dark:text-black">
+        <div className="max-w-4xl mx-auto text-center space-y-8">
+          <h2 className="text-3xl md:text-4xl font-bold">Join the Founder Community</h2>
+          <p className="text-xl text-gray-300 dark:text-gray-700">
+            Help build transparency in venture capital while finding the right partners for your startup.
+          </p>
+          <div className="pt-4">
+            <SignedOut>
+              <Link 
+                href="/sign-up" 
+                className="inline-block px-8 py-4 rounded-md bg-white dark:bg-black text-black dark:text-white font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-lg"
+              >
+                Get Started
+              </Link>
+            </SignedOut>
+            <SignedIn>
+              <Link 
+                href="/reviews/new"
+                className="inline-block px-8 py-4 rounded-md bg-white dark:bg-black text-black dark:text-white font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-lg"
+              >
+                Write Your First Review
+              </Link>
+            </SignedIn>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
