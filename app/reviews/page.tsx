@@ -92,14 +92,22 @@ export default async function ReviewsPage({
       
       {/* Search and filters */}
       <div className="mb-8 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-        <form>
-          <input
-            type="text"
-            name="query"
-            placeholder="Search for VC firms or by industry..."
-            defaultValue={query}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-          />
+        <form action="/reviews" method="GET" className="flex gap-2">
+          <div className="flex-1">
+            <input
+              type="text"
+              name="query"
+              placeholder="Search for VC firms or by industry..."
+              defaultValue={query}
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+            />
+          </div>
+          <button 
+            type="submit"
+            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+          >
+            Search
+          </button>
         </form>
       </div>
       
