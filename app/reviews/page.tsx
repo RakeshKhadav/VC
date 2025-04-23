@@ -53,10 +53,11 @@ async function getReviews(searchQuery?: string, page: number = 1) {
   };
 }
 
+// Update the type definition to match Next.js 15's requirements
 export default async function ReviewsPage({
-  searchParams
+  searchParams,
 }: {
-  searchParams: { query?: string; page?: string }
+  searchParams?: { query?: string; page?: string };
 }) {
   const query = searchParams?.query || "";
   const page = parseInt(searchParams?.page || "1");
