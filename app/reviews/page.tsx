@@ -58,8 +58,7 @@ export default async function ReviewsPage(props: {
   params?: Promise<{ slug: string }>;
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  // Instead of using the 'use' hook, we can await the promises directly
-  const params = props.params ? await props.params : {};
+  // Only extract searchParams since params isn't used in this component
   const searchParams = props.searchParams ? await props.searchParams : {};
   
   const query = typeof searchParams?.query === 'string' ? searchParams.query : "";
