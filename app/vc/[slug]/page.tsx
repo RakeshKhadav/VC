@@ -103,13 +103,17 @@ export default async function VCProfilePage({
   params,
   searchParams 
 }: { 
-  params: { slug: string },
-  searchParams?: { page?: string }
+  params: Promise<{ slug: string }>,
+  searchParams?: Promise<{ page?: string }>
 }) {
-  const page = parseInt(searchParams?.page || "1");
+  // Await the params and searchParams promises
+  const resolvedParams = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  
+  const page = parseInt(resolvedSearchParams?.page || "1");
   
   // Fetch VC data from database
-  const vcData = await getVCData(params.slug);
+  const vcData = await getVCData(resolvedParams.slug);
   
   if (!vcData) {
     notFound();
@@ -185,7 +189,7 @@ export default async function VCProfilePage({
           </div>
           
           <div className="mt-4 md:mt-0">
-            <Link href={`/reviews/new?vc=${params.slug}`} className="px-5 py-2.5 bg-black dark:bg.white text-white dark:text-black rounded-md text-sm font-medium hover:bg-gray-800 dark:hover:bg.gray-200 transition-colors inline-block">
+            <Link href={`/reviews/new?vc=${resolvedParams.slug}`} className="px-5 py-2.5 bg-black dark:bg.white text-white dark:text-black rounded-md text-sm font-medium hover:bg-gray-800 dark:hover:bg.gray-200 transition-colors inline-block">
               Write a Review
             </Link>
           </div>
@@ -291,8 +295,8 @@ export default async function VCProfilePage({
             <p className="text-gray-600 dark:text-gray-400">No reviews yet. Be the first to leave a review!</p>
             <div className="mt-4">
               <Link 
-                href={`/reviews/new?vc=${params.slug}`} 
-                className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-md text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors inline-block"
+                href={`/reviews/new?vc=${resolvedParams.slug}`} 
+                className="px-4 py-2 bg-black dark:bg.white text-white dark:text-black rounded-md text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors inline-block"
               >
                 Write a Review
               </Link>
@@ -305,7 +309,7 @@ export default async function VCProfilePage({
           <div className="mt-8 flex justify-center">
             <div className="inline-flex items-center rounded-md">
               <Link 
-                href={hasPrevPage ? `/vc/${params.slug}?page=${currentPage - 1}` : '#'} 
+                href={hasPrevPage ? `/vc/${resolvedParams.slug}?page=${currentPage - 1}` : '#'} 
                 className={`px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-l-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 ${!hasPrevPage ? 'opacity-50 cursor-not-allowed' : ''}`}
                 aria-disabled={!hasPrevPage}
               >
@@ -328,7 +332,7 @@ export default async function VCProfilePage({
                 return (
                   <Link 
                     key={pageToShow}
-                    href={`/vc/${params.slug}?page=${pageToShow}`}
+                    href={`/vc/${resolvedParams.slug}?page=${pageToShow}`}
                     className={`px-4 py-2 border-t border-b ${i < 4 ? 'border-r' : ''} border-gray-300 dark:border-gray-600 
                       ${currentPage === pageToShow ? 'bg-gray-50 dark:bg-gray-700 text-black dark:text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
                   >
@@ -338,7 +342,7 @@ export default async function VCProfilePage({
               })}
               
               <Link 
-                href={hasNextPage ? `/vc/${params.slug}?page=${currentPage + 1}` : '#'}
+                href={hasNextPage ? `/vc/${resolvedParams.slug}?page=${currentPage + 1}` : '#'}
                 className={`px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-r-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 ${!hasNextPage ? 'opacity-50 cursor-not-allowed' : ''}`}
                 aria-disabled={!hasNextPage}
               >
