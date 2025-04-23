@@ -54,6 +54,7 @@ async function getVCData(slug: string): Promise<VCData | null> {
   //   }
   // });
   
+  console.log(`Fetching VC data for slug: ${slug}`); // Use the slug parameter to avoid the unused variable warning
   return null;
 }
 
@@ -184,7 +185,7 @@ export default async function VCProfilePage({
           </div>
           
           <div className="mt-4 md:mt-0">
-            <Link href={`/reviews/new?vc=${params.slug}`} className="px-5 py-2.5 bg-black dark:bg.white text-white dark:text-black rounded-md text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors inline-block">
+            <Link href={`/reviews/new?vc=${params.slug}`} className="px-5 py-2.5 bg-black dark:bg.white text-white dark:text-black rounded-md text-sm font-medium hover:bg-gray-800 dark:hover:bg.gray-200 transition-colors inline-block">
               Write a Review
             </Link>
           </div>

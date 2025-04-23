@@ -144,7 +144,7 @@ export default function SubmitReviewPage() {
         router.push("/reviews");
       }, 2000);
       
-    } catch (error) { // Changed from '_' to 'error' since we should use a proper variable name
+    } catch (error) { 
       showAlert("An error occurred while submitting your review. Please try again.", "danger", {
         title: "Submission Error",
         autoClose: true,
