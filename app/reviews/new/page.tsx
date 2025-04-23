@@ -4,16 +4,39 @@ import { useUser } from "@clerk/nextjs";
 import { redirect, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import StarRating from "@/app/components/ui/StarRating";
 
 export default function SubmitReviewPage() {
   const { isLoaded, isSignedIn, user } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isRedirecting, setIsRedirecting] = useState(false);
-  const [selectedVC, setSelectedVC] = useState(searchParams?.get("vc") || "");
   
-  // Extract VC name from URL if provided - fixed by using useSearchParams hook
-  const vcSlug = searchParams?.get("vc") || undefined;
+  // Form state management
+  const [selectedVC, setSelectedVC] = useState("");
+  const [companyInfo, setCompanyInfo] = useState({
+    name: "",
+    website: "",
+    sector: "",
+    role: ""
+  });
+  const [ratings, setRatings] = useState({
+    responsiveness: 0,
+    fairness: 0,
+    support: 0
+  });
+  const [reviewDetails, setReviewDetails] = useState({
+    content: "",
+    stage: "",
+    amount: "",
+    year: "",
+    anonymous: true,
+    terms: false
+  });
+  const [otherVC, setOtherVC] = useState("");
+  
+  // Extract VC name from URL if provided
+  const vcSlug = searchParams ? searchParams.get("vc") || "" : "";
   
   // Redirect if not logged in
   useEffect(() => {
@@ -33,6 +56,38 @@ export default function SubmitReviewPage() {
   // Handle VC selection change
   const handleVCChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedVC(e.target.value);
+  };
+  
+  // Handle company info changes
+  const handleCompanyInfoChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setCompanyInfo(prev => ({
+      ...prev,
+      [name.replace('company_', '')]: value
+    }));
+  };
+  
+  // Handle review details changes
+  const handleReviewDetailsChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    const newValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
+    setReviewDetails(prev => ({
+      ...prev,
+      [name]: newValue
+    }));
+  };
+  
+  // Handle other VC name change
+  const handleOtherVCChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setOtherVC(e.target.value);
+  };
+  
+  // Handle rating changes
+  const handleRatingChange = (category: 'responsiveness' | 'fairness' | 'support', value: number) => {
+    setRatings(prev => ({
+      ...prev,
+      [category]: value
+    }));
   };
   
   // Show loading state while checking auth
@@ -107,8 +162,94 @@ export default function SubmitReviewPage() {
                 name="other-vc"
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
                 placeholder="Enter VC firm name"
+                value={otherVC}
+                onChange={handleOtherVCChange}
                 required={selectedVC === 'other'}
               />
+            </div>
+          </div>
+          
+          {/* Company Information Section */}
+          <div className="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-6">
+            <h3 className="text-lg font-medium">Your Company Information</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              This information helps provide context for your review. If you choose to remain anonymous, your company details will still be shown with your review.
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="company_name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Company Name
+                </label>
+                <input
+                  type="text"
+                  id="company_name"
+                  name="company_name"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                  placeholder="Your company name"
+                  value={companyInfo.name}
+                  onChange={handleCompanyInfoChange}
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="company_website" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Company Website
+                </label>
+                <input
+                  type="url"
+                  id="company_website"
+                  name="company_website"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                  placeholder="https://example.com"
+                  value={companyInfo.website}
+                  onChange={handleCompanyInfoChange}
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="company_sector" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Industry/Sector
+                </label>
+                <select
+                  id="company_sector"
+                  name="company_sector"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                  value={companyInfo.sector}
+                  onChange={handleCompanyInfoChange}
+                >
+                  <option value="">Select industry</option>
+                  <option value="fintech">FinTech</option>
+                  <option value="healthtech">HealthTech</option>
+                  <option value="ecommerce">E-commerce</option>
+                  <option value="saas">SaaS</option>
+                  <option value="ai">AI/Machine Learning</option>
+                  <option value="consumer">Consumer</option>
+                  <option value="enterprise">Enterprise Software</option>
+                  <option value="hardware">Hardware</option>
+                  <option value="marketplaces">Marketplaces</option>
+                  <option value="edtech">EdTech</option>
+                  <option value="cleantech">CleanTech</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              
+              <div>
+                <label htmlFor="company_role" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Your Role
+                </label>
+                <input
+                  type="text"
+                  id="company_role"
+                  name="company_role"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                  placeholder="CEO, CTO, Founder, etc."
+                  value={companyInfo.role}
+                  onChange={handleCompanyInfoChange}
+                />
+              </div>
             </div>
           </div>
           
@@ -124,28 +265,22 @@ export default function SubmitReviewPage() {
                   (How quickly they respond to communications and requests)
                 </span>
               </label>
-              <div className="flex space-x-3">
-                {[1, 2, 3, 4, 5].map((rating) => (
-                  <div key={rating} className="flex flex-col items-center">
-                    <input 
-                      type="radio" 
-                      id={`responsiveness-${rating}`} 
-                      name="responsiveness" 
-                      value={rating}
-                      className="sr-only"
-                      required
-                    />
-                    <label 
-                      htmlFor={`responsiveness-${rating}`}
-                      className="cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
-                    >
-                      <svg className="w-8 h-8 text-gray-400 hover:text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                      </svg>
-                    </label>
-                    <span className="text-sm text-gray-600 dark:text-gray-400 mt-1">{rating}</span>
-                  </div>
-                ))}
+              <div className="flex items-center">
+                <StarRating 
+                  value={ratings.responsiveness}
+                  onChange={(newRating) => handleRatingChange('responsiveness', newRating)} 
+                />
+                <input 
+                  type="hidden" 
+                  name="responsiveness" 
+                  value={ratings.responsiveness}
+                  required
+                />
+                {ratings.responsiveness > 0 && (
+                  <span className="ml-3 text-sm text-gray-600 dark:text-gray-400">
+                    {ratings.responsiveness.toFixed(1)}
+                  </span>
+                )}
               </div>
             </div>
             
@@ -157,28 +292,22 @@ export default function SubmitReviewPage() {
                   (How fair their term sheets and negotiations are)
                 </span>
               </label>
-              <div className="flex space-x-3">
-                {[1, 2, 3, 4, 5].map((rating) => (
-                  <div key={rating} className="flex flex-col items-center">
-                    <input 
-                      type="radio" 
-                      id={`fairness-${rating}`} 
-                      name="fairness" 
-                      value={rating}
-                      className="sr-only"
-                      required
-                    />
-                    <label 
-                      htmlFor={`fairness-${rating}`}
-                      className="cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
-                    >
-                      <svg className="w-8 h-8 text-gray-400 hover:text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                      </svg>
-                    </label>
-                    <span className="text-sm text-gray-600 dark:text-gray-400 mt-1">{rating}</span>
-                  </div>
-                ))}
+              <div className="flex items-center">
+                <StarRating 
+                  value={ratings.fairness}
+                  onChange={(newRating) => handleRatingChange('fairness', newRating)} 
+                />
+                <input 
+                  type="hidden" 
+                  name="fairness" 
+                  value={ratings.fairness}
+                  required
+                />
+                {ratings.fairness > 0 && (
+                  <span className="ml-3 text-sm text-gray-600 dark:text-gray-400">
+                    {ratings.fairness.toFixed(1)}
+                  </span>
+                )}
               </div>
             </div>
             
@@ -190,46 +319,42 @@ export default function SubmitReviewPage() {
                   (The level of support and guidance provided post-investment)
                 </span>
               </label>
-              <div className="flex space-x-3">
-                {[1, 2, 3, 4, 5].map((rating) => (
-                  <div key={rating} className="flex flex-col items-center">
-                    <input 
-                      type="radio" 
-                      id={`support-${rating}`} 
-                      name="support" 
-                      value={rating}
-                      className="sr-only"
-                      required
-                    />
-                    <label 
-                      htmlFor={`support-${rating}`}
-                      className="cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
-                    >
-                      <svg className="w-8 h-8 text-gray-400 hover:text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                      </svg>
-                    </label>
-                    <span className="text-sm text-gray-600 dark:text-gray-400 mt-1">{rating}</span>
-                  </div>
-                ))}
+              <div className="flex items-center">
+                <StarRating 
+                  value={ratings.support}
+                  onChange={(newRating) => handleRatingChange('support', newRating)} 
+                />
+                <input 
+                  type="hidden" 
+                  name="support" 
+                  value={ratings.support}
+                  required
+                />
+                {ratings.support > 0 && (
+                  <span className="ml-3 text-sm text-gray-600 dark:text-gray-400">
+                    {ratings.support.toFixed(1)}
+                  </span>
+                )}
               </div>
             </div>
           </div>
           
           {/* Review Content */}
           <div>
-            <label htmlFor="review" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="content" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Your Review <span className="text-red-500">*</span>
               <span className="block text-xs text-gray-500 dark:text-gray-400 font-normal mt-1">
                 Share your experience working with this VC. What was the interaction like? What went well? What could have been improved?
               </span>
             </label>
             <textarea
-              id="review"
-              name="review"
+              id="content"
+              name="content"
               rows={6}
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
               placeholder="Write your review here..."
+              value={reviewDetails.content}
+              onChange={handleReviewDetailsChange}
               required
             ></textarea>
           </div>
@@ -244,6 +369,8 @@ export default function SubmitReviewPage() {
                 id="stage"
                 name="stage"
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                value={reviewDetails.stage}
+                onChange={handleReviewDetailsChange}
               >
                 <option value="">Select stage</option>
                 <option value="pre-seed">Pre-seed</option>
@@ -264,6 +391,8 @@ export default function SubmitReviewPage() {
                 id="amount"
                 name="amount"
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                value={reviewDetails.amount}
+                onChange={handleReviewDetailsChange}
               >
                 <option value="">Select amount</option>
                 <option value="<500k">Under $500K</option>
@@ -287,12 +416,14 @@ export default function SubmitReviewPage() {
               id="year"
               name="year"
               className="w-full md:w-1/3 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+              value={reviewDetails.year}
+              onChange={handleReviewDetailsChange}
             >
               <option value="">Select year</option>
               {[...Array(10)].map((_, i) => {
                 const year = new Date().getFullYear() - i;
                 return (
-                  <option key={year} value={year}>
+                  <option key={year} value={year.toString()}>
                     {year}
                   </option>
                 );
@@ -310,7 +441,8 @@ export default function SubmitReviewPage() {
                 name="anonymous"
                 type="checkbox"
                 className="h-4 w-4 text-black dark:text-white focus:ring-black dark:focus:ring-white border-gray-300 dark:border-gray-700 rounded"
-                defaultChecked
+                checked={reviewDetails.anonymous}
+                onChange={handleReviewDetailsChange}
               />
               <label htmlFor="anonymous" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
                 Submit anonymously (your identity will not be shared)
@@ -323,6 +455,8 @@ export default function SubmitReviewPage() {
                 name="terms"
                 type="checkbox"
                 className="h-4 w-4 text-black dark:text-white focus:ring-black dark:focus:ring-white border-gray-300 dark:border-gray-700 rounded"
+                checked={reviewDetails.terms}
+                onChange={handleReviewDetailsChange}
                 required
               />
               <label htmlFor="terms" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
