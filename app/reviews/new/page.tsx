@@ -5,12 +5,15 @@ import { redirect, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import StarRating from "@/app/components/ui/StarRating";
+import { useNotification } from "@/app/context/NotificationContext";
 
 export default function SubmitReviewPage() {
   const { isLoaded, isSignedIn, user } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { showAlert } = useNotification();
   
   // Form state management
   const [selectedVC, setSelectedVC] = useState("");
@@ -18,7 +21,8 @@ export default function SubmitReviewPage() {
     name: "",
     website: "",
     sector: "",
-    role: ""
+    role: "",
+    location: ""
   });
   const [ratings, setRatings] = useState({
     responsiveness: 0,
@@ -90,6 +94,66 @@ export default function SubmitReviewPage() {
     }));
   };
   
+  // Check if all required fields are filled
+  const areRequiredFieldsFilled = () => {
+    // Check VC selection
+    if (!selectedVC) return false;
+    if (selectedVC === 'other' && !otherVC) return false;
+    
+    // Check ratings
+    if (ratings.responsiveness === 0 || ratings.fairness === 0 || ratings.support === 0) return false;
+    
+    // Check review content
+    if (!reviewDetails.content.trim()) return false;
+    
+    // Check terms agreement
+    if (!reviewDetails.terms) return false;
+    
+    return true;
+  };
+
+  // Form submission handler
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!areRequiredFieldsFilled()) {
+      showAlert("Please fill in all required fields", "danger", {
+        title: "Validation Error",
+        autoClose: true,
+      });
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      // In a real app, you would send the data to your API here
+      // For now, we'll just simulate a successful submission
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      showAlert("Your review has been submitted successfully!", "success", {
+        title: "Thank you for your feedback",
+        autoClose: true,
+        duration: 2000, // 2 seconds auto-fade
+        variant: "flat",
+        radius: "lg"
+      });
+      
+      // Reset the form or redirect
+      setTimeout(() => {
+        router.push("/reviews");
+      }, 2000);
+      
+    } catch (error) {
+      showAlert("An error occurred while submitting your review. Please try again.", "danger", {
+        title: "Submission Error",
+        autoClose: true,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
   // Show loading state while checking auth
   if (!isLoaded || !isSignedIn) {
     return (
@@ -131,7 +195,7 @@ export default function SubmitReviewPage() {
       <h1 className="text-3xl font-bold mb-8">Write a Review</h1>
       
       <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-        <form className="space-y-6">
+        <form className="space-y-6" onSubmit={handleSubmit}>
           {/* VC Selection */}
           <div>
             <label htmlFor="vc" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -250,6 +314,21 @@ export default function SubmitReviewPage() {
                   onChange={handleCompanyInfoChange}
                 />
               </div>
+            </div>
+            
+            <div>
+              <label htmlFor="company_location" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Company Location
+              </label>
+              <input
+                type="text"
+                id="company_location"
+                name="company_location"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                placeholder="City, Country or Region"
+                value={companyInfo.location}
+                onChange={handleCompanyInfoChange}
+              />
             </div>
           </div>
           
@@ -433,22 +512,6 @@ export default function SubmitReviewPage() {
           
           {/* Privacy Settings */}
           <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-            <h3 className="text-lg font-medium mb-4">Privacy Settings</h3>
-            
-            <div className="flex items-center mb-4">
-              <input
-                id="anonymous"
-                name="anonymous"
-                type="checkbox"
-                className="h-4 w-4 text-black dark:text-white focus:ring-black dark:focus:ring-white border-gray-300 dark:border-gray-700 rounded"
-                checked={reviewDetails.anonymous}
-                onChange={handleReviewDetailsChange}
-              />
-              <label htmlFor="anonymous" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                Submit anonymously (your identity will not be shared)
-              </label>
-            </div>
-            
             <div className="flex items-center">
               <input
                 id="terms"
@@ -469,9 +532,10 @@ export default function SubmitReviewPage() {
           <div className="pt-4">
             <button
               type="submit"
-              className="w-full py-3 px-4 bg-black dark:bg-white text-white dark:text-black rounded-md font-medium hover:bg-gray-800 dark:hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white transition-colors"
+              className={`w-full py-3 px-4 ${!areRequiredFieldsFilled() ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed' : 'bg-black dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-200'} text-white dark:text-black rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white transition-colors`}
+              disabled={!areRequiredFieldsFilled() || isSubmitting}
             >
-              Submit Review
+              {isSubmitting ? "Submitting..." : "Submit Review"}
             </button>
             <p className="mt-3 text-xs text-gray-500 dark:text-gray-400 text-center">
               Your review will be moderated before being published
