@@ -1,7 +1,7 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import StarRating from "@/app/components/ui/StarRating";
-import { Review } from "@/app/reviews/page";
 
 // Define types for VC data
 export interface VCData {
@@ -57,7 +57,7 @@ async function getVCData(slug: string): Promise<VCData | null> {
   return null;
 }
 
-async function getVCReviews(vcId: string, page = 1, limit = 5): Promise<{
+async function getVCReviews(vcId: string, page = 1): Promise<{
   reviews: VCReview[];
   totalReviews: number;
   currentPage: number;
@@ -133,7 +133,18 @@ export default async function VCProfilePage({
       <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm mb-8">
         <div className="flex flex-col md:flex-row md:items-center gap-6">
           <div className="w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden flex-shrink-0">
-            {vcData.logo && <img src={vcData.logo} alt={vcData.name} className="w-full h-full object-cover" />}
+            {vcData.logo && (
+              <div className="relative w-full h-full">
+                <Image 
+                  src={vcData.logo} 
+                  alt={vcData.name} 
+                  fill
+                  sizes="(max-width: 768px) 96px, 96px"
+                  className="object-cover"
+                  priority
+                />
+              </div>
+            )}
           </div>
           
           <div className="flex-1">
@@ -173,7 +184,7 @@ export default async function VCProfilePage({
           </div>
           
           <div className="mt-4 md:mt-0">
-            <Link href={`/reviews/new?vc=${params.slug}`} className="px-5 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-md text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors inline-block">
+            <Link href={`/reviews/new?vc=${params.slug}`} className="px-5 py-2.5 bg-black dark:bg.white text-white dark:text-black rounded-md text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors inline-block">
               Write a Review
             </Link>
           </div>
@@ -193,7 +204,7 @@ export default async function VCProfilePage({
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">How quickly they respond to communications and requests</p>
         </div>
         
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+        <div className="bg-white dark:bg.gray-800 rounded-lg p-6 shadow-sm">
           <h3 className="text-lg font-medium mb-4">Fairness</h3>
           <div className="flex items-center">
             <div className="flex flex-1">

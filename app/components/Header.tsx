@@ -12,11 +12,11 @@ import {
 import { useRouter } from "next/navigation";
 
 export default function Header() {
-  const { isLoaded, isSignedIn, user } = useUser();
+  const { isLoaded, isSignedIn } = useUser(); // Removed unused 'user' variable
   const router = useRouter();
   
   // Function to handle navigation for protected routes
-  const handleProtectedNav = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
+  const handleProtectedNav = (e: React.MouseEvent<HTMLAnchorElement>) => { // Removed unused 'path' parameter
     if (!isSignedIn) {
       e.preventDefault();
       router.push("/sign-up");
@@ -46,7 +46,7 @@ export default function Header() {
           </SignedIn>
           
           <SignedOut>
-            <Link href="/sign-up" onClick={(e) => handleProtectedNav(e, "/reviews")} className="text-sm text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">
+            <Link href="/sign-up" onClick={(e) => handleProtectedNav(e)} className="text-sm text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">
               Explore Reviews
             </Link>
             <Link href="/about" className="text-sm text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">

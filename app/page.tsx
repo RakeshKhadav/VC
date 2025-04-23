@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useUser } from "@clerk/nextjs";
 
 export default function Home() {
@@ -211,7 +210,7 @@ export default function Home() {
                 key={index} 
                 className="p-6 rounded-lg bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700"
               >
-                <p className="text-gray-600 dark:text-gray-300 mb-4 italic">"{item.quote}"</p>
+                <p className="text-gray-600 dark:text-gray-300 mb-4 italic">&quot;{item.quote}&quot;</p>
                 <p className="font-medium">{item.author}</p>
               </div>
             ))}

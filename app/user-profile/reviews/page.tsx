@@ -1,6 +1,7 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 // Define a type for review objects
 interface Review {
@@ -32,11 +33,16 @@ export default async function UserReviewsPage() {
           <div className="flex flex-col items-center mb-6">
             <div className="w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden mb-4">
               {user.imageUrl ? (
-                <img 
-                  src={user.imageUrl} 
-                  alt={user.firstName || 'Profile'} 
-                  className="w-full h-full object-cover" 
-                />
+                <div className="relative w-full h-full">
+                  <Image 
+                    src={user.imageUrl} 
+                    alt={user.firstName || 'Profile'} 
+                    fill
+                    sizes="(max-width: 768px) 96px, 96px"
+                    className="object-cover"
+                    priority
+                  />
+                </div>
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-500 text-2xl">
                   {(user.firstName?.charAt(0) || '') + (user.lastName?.charAt(0) || '')}
@@ -139,7 +145,7 @@ export default async function UserReviewsPage() {
               </svg>
               <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-gray-100">No reviews yet</h3>
               <p className="mt-1 text-gray-500 dark:text-gray-400">
-                You haven't submitted any reviews yet. Share your experiences with VCs to help other founders.
+                You haven&apos;t submitted any reviews yet. Share your experiences with VCs to help other founders.
               </p>
               <div className="mt-6">
                 <Link href="/reviews/new" className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white dark:text-black bg-black dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white">

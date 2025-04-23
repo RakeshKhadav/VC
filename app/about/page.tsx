@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 
 export default function AboutPage() {
   // Team members data
@@ -40,11 +39,11 @@ export default function AboutPage() {
           <h2 className="text-3xl font-bold mb-6">Our Mission</h2>
           <p className="text-gray-600 dark:text-gray-300 mb-4">
             Backchannel was founded with a simple mission: to bring transparency to venture capital. 
-            We believe that founders deserve to know what they're getting into when they take on investment.
+            We believe that founders deserve to know what they&apos;re getting into when they take on investment.
           </p>
           <p className="text-gray-600 dark:text-gray-300">
             By creating a platform where founders can anonymously share their experiences,
-            we're leveling the playing field and helping the next generation of entrepreneurs
+            we&apos;re leveling the playing field and helping the next generation of entrepreneurs
             make more informed decisions about who they partner with.
           </p>
         </div>
@@ -56,7 +55,7 @@ export default function AboutPage() {
           </p>
           <p className="text-gray-600 dark:text-gray-300">
             After one particularly challenging investor relationship, Alex realized that if there had been
-            a way to learn from other founders' experiences, many headaches could have been avoided.
+            a way to learn from other founders&apos; experiences, many headaches could have been avoided.
             Thus, Backchannel was created to fill that information gap.
           </p>
         </div>

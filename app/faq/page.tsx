@@ -9,15 +9,15 @@ export default function FAQPage() {
     },
     {
       question: "How does anonymity work?",
-      answer: "When you submit a review, your identity is protected. We verify that you're a legitimate founder, but we don't share identifiable information with the reviewed VCs or other users. This allows for honest feedback without fear of repercussions."
+      answer: "When you submit a review, your identity is protected. We verify that you&apos;re a legitimate founder, but we don&apos;t share identifiable information with the reviewed VCs or other users. This allows for honest feedback without fear of repercussions."
     },
     {
       question: "How do you verify reviewers?",
-      answer: "We use a combination of email verification, LinkedIn profile checks, and company registration data to ensure reviews come from actual founders who have interacted with the VCs they're reviewing. This maintains the quality and trustworthiness of our reviews."
+      answer: "We use a combination of email verification, LinkedIn profile checks, and company registration data to ensure reviews come from actual founders who have interacted with the VCs they&apos;re reviewing. This maintains the quality and trustworthiness of our reviews."
     },
     {
       question: "Can VCs respond to reviews?",
-      answer: "Yes, verified VC representatives can claim their firm's profile and respond to reviews. This creates a balanced platform where both founders and investors have a voice."
+      answer: "Yes, verified VC representatives can claim their firm&apos;s profile and respond to reviews. This creates a balanced platform where both founders and investors have a voice."
     },
     {
       question: "What kind of information should I include in my review?",
@@ -33,15 +33,15 @@ export default function FAQPage() {
     },
     {
       question: "Is there a fee to use Backchannel?",
-      answer: "Backchannel is free for founders to use for reading and submitting reviews. We're committed to keeping the core platform accessible to maintain transparency in the VC ecosystem."
+      answer: "Backchannel is free for founders to use for reading and submitting reviews. We&apos;re committed to keeping the core platform accessible to maintain transparency in the VC ecosystem."
     },
     {
-      question: "What's your content moderation policy?",
+      question: "What&apos;s your content moderation policy?",
       answer: "All reviews are moderated to ensure they comply with our community guidelines. We remove content that contains personal attacks, hate speech, or information that could violate confidentiality agreements."
     },
     {
-      question: "How can I suggest a VC firm that's not listed?",
-      answer: "When writing a review, you can select 'Other' in the VC selection dropdown and enter the name of the firm. Our team will verify the firm and add it to our database."
+      question: "How can I suggest a VC firm that&apos;s not listed?",
+      answer: "When writing a review, you can select &apos;Other&apos; in the VC selection dropdown and enter the name of the firm. Our team will verify the firm and add it to our database."
     }
   ];
 
@@ -67,7 +67,7 @@ export default function FAQPage() {
       <div className="mt-12 text-center">
         <h2 className="text-2xl font-bold mb-6">Still have questions?</h2>
         <p className="text-gray-600 dark:text-gray-300 mb-8">
-          If you couldn't find the answer to your question, feel free to reach out to our team.
+          If you couldn&apos;t find the answer to your question, feel free to reach out to our team.
         </p>
         <Link 
           href="/contact" 

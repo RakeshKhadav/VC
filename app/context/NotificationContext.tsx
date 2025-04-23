@@ -64,7 +64,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     const id = options.id || Math.random().toString(36).substring(2, 9);
     
     // Set default values based on alert type
-    let autoClose = options.autoClose ?? true; // Default all alerts to auto-close
+    const autoClose = options.autoClose ?? true; // Default all alerts to auto-close
     let duration = options.duration;
     let icon = options.icon;
     

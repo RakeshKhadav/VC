@@ -30,7 +30,7 @@ const calculateAverageRating = (ratings: { responsiveness: number, fairness: num
 };
 
 // This function would fetch reviews from your database
-async function getReviews(searchQuery?: string, page: number = 1, limit: number = 10) {
+async function getReviews(searchQuery?: string, page: number = 1) {
   // TODO: Replace with actual database call
   // Example implementation with a database:
   // return await db.reviews.findMany({
@@ -59,12 +59,11 @@ export default async function ReviewsPage({
 }: {
   searchParams?: { query?: string; page?: string }
 }) {
-  const user = await currentUser();
   const query = searchParams?.query || "";
   const page = parseInt(searchParams?.page || "1");
   
   // Fetch reviews from database
-  const { reviews, totalCount, currentPage, totalPages } = await getReviews(query, page);
+  const { reviews, currentPage, totalPages } = await getReviews(query, page);
   
   // Calculate total pages for pagination
   const hasNextPage = currentPage < totalPages;

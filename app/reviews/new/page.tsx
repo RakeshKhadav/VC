@@ -1,14 +1,14 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import { redirect, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import StarRating from "@/app/components/ui/StarRating";
 import { useNotification } from "@/app/context/NotificationContext";
 
 export default function SubmitReviewPage() {
-  const { isLoaded, isSignedIn, user } = useUser();
+  const { isLoaded, isSignedIn } = useUser(); // Removed unused 'user' variable
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isRedirecting, setIsRedirecting] = useState(false);
@@ -144,7 +144,7 @@ export default function SubmitReviewPage() {
         router.push("/reviews");
       }, 2000);
       
-    } catch (error) {
+    } catch (_) { // Changed from 'error' to '_' since it's not used
       showAlert("An error occurred while submitting your review. Please try again.", "danger", {
         title: "Submission Error",
         autoClose: true,

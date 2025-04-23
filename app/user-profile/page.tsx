@@ -3,6 +3,7 @@
 import { useUser, useAuth } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 // Define a type for review objects
@@ -24,7 +25,7 @@ export default function UserProfilePage() {
   const [activeTab, setActiveTab] = useState<'profile' | 'reviews'>(
     tabParam === 'reviews' ? 'reviews' : 'profile'
   );
-  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviews] = useState<Review[]>([]);
   
   useEffect(() => {
     // Wait for Clerk to load and check auth status
@@ -231,11 +232,16 @@ export default function UserProfilePage() {
           <div className="flex flex-col items-center mb-6">
             <div className="w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden mb-4">
               {user.imageUrl ? (
-                <img 
-                  src={user.imageUrl} 
-                  alt={user.firstName || 'Profile'} 
-                  className="w-full h-full object-cover" 
-                />
+                <div className="relative w-full h-full">
+                  <Image 
+                    src={user.imageUrl} 
+                    alt={user.firstName || 'Profile'} 
+                    fill
+                    sizes="(max-width: 768px) 96px, 96px"
+                    className="object-cover"
+                    priority
+                  />
+                </div>
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-500 text-2xl">
                   {(user.firstName?.charAt(0) || '') + (user.lastName?.charAt(0) || '')}

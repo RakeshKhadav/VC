@@ -171,7 +171,7 @@ export default function DashboardPage() {
           <div className="border-t border-gray-200 dark:border-gray-700">
             <div className="py-4 flex flex-col space-y-1">
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                You haven't submitted any reviews yet.
+                You haven&apos;t submitted any reviews yet.
               </p>
               <Link 
                 href="/reviews/new" 
