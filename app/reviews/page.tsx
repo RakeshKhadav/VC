@@ -1,4 +1,3 @@
-import { currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
 import StarRating from "@/app/components/ui/StarRating";
 
