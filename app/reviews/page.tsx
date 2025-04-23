@@ -53,10 +53,11 @@ async function getReviews(searchQuery?: string, page: number = 1) {
   };
 }
 
-export default async function ReviewsPage(props: any) {
-  const searchParams = props.searchParams || {};
-  const query = typeof searchParams.query === 'string' ? searchParams.query : "";
-  const pageParam = typeof searchParams.page === 'string' ? searchParams.page : "1";
+export default async function ReviewsPage() {
+  // Get search parameters from URL without using props or searchParams
+  const url = new URL(process.env.VERCEL_URL || process.env.NEXT_PUBLIC_URL || "http://localhost:3000");
+  const query = url.searchParams.get("query") || "";
+  const pageParam = url.searchParams.get("page") || "1";
   const page = parseInt(pageParam);
   
   // Fetch reviews from database
