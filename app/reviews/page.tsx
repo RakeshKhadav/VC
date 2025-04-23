@@ -1,6 +1,5 @@
 import Link from "next/link";
 import StarRating from "@/app/components/ui/StarRating";
-import { use } from "react"; // Add use hook from React
 
 // Define review data type for strong typing
 export interface Review {
@@ -59,8 +58,9 @@ export default async function ReviewsPage(props: {
   params?: Promise<{ slug: string }>;
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  // Unwrap the searchParams promise
-  const searchParams = props.searchParams ? use(props.searchParams) : {};
+  // Instead of using the 'use' hook, we can await the promises directly
+  const params = props.params ? await props.params : {};
+  const searchParams = props.searchParams ? await props.searchParams : {};
   
   const query = typeof searchParams?.query === 'string' ? searchParams.query : "";
   const pageParam = typeof searchParams?.page === 'string' ? searchParams.page : "1";
