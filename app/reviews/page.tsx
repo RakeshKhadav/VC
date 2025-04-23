@@ -54,7 +54,8 @@ async function getReviews(searchQuery?: string, page: number = 1) {
 }
 
 type PageProps = {
-  searchParams?: { [key: string]: string | string[] | undefined };
+  params: { slug?: string };
+  searchParams: { [key: string]: string | string[] | undefined };
 };
 
 export default async function ReviewsPage({ searchParams }: PageProps) {
