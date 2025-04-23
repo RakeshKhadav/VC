@@ -5,11 +5,22 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+// Define interface for VC data including rating information
+interface PopularVC {
+  id: string;
+  name: string;
+  slug: string; 
+  rating: number;
+  reviewCount: number;
+}
+
 export default function DashboardPage() {
   const { isLoaded, isSignedIn, user } = useUser();
   const { getToken } = useAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
+  const [popularVCs, setPopularVCs] = useState<PopularVC[]>([]);
+  const [isLoadingVCs, setIsLoadingVCs] = useState(true);
 
   useEffect(() => {
     // Wait for Clerk to load and check auth status
@@ -37,6 +48,44 @@ export default function DashboardPage() {
     checkAuth();
   }, [isLoaded, isSignedIn, router, getToken]);
 
+  // Fetch popular VCs data
+  useEffect(() => {
+    async function fetchPopularVCs() {
+      try {
+        setIsLoadingVCs(true);
+        
+        // This would be replaced with an actual API call in production
+        // Example: const response = await fetch('/api/vcs/popular');
+        // const data = await response.json();
+        // setPopularVCs(data.vcs);
+
+        // For now, use mock data
+        const mockVCs: PopularVC[] = [
+          { id: '1', name: 'Sequoia Capital', slug: 'sequoia-capital', rating: 4.8, reviewCount: 243 },
+          { id: '2', name: 'Andreessen Horowitz', slug: 'andreessen-horowitz', rating: 4.7, reviewCount: 189 },
+          { id: '3', name: 'Y Combinator', slug: 'y-combinator', rating: 4.9, reviewCount: 278 },
+          { id: '4', name: 'Accel', slug: 'accel', rating: 4.5, reviewCount: 156 },
+          { id: '5', name: 'Benchmark', slug: 'benchmark', rating: 4.6, reviewCount: 132 },
+        ];
+        
+        // Sort by rating (highest first)
+        const sortedVCs = [...mockVCs].sort((a, b) => b.rating - a.rating);
+        
+        // Take top 4 VCs
+        setPopularVCs(sortedVCs.slice(0, 4));
+        setIsLoadingVCs(false);
+      } catch (error) {
+        console.error('Error fetching popular VCs:', error);
+        setIsLoadingVCs(false);
+      }
+    }
+
+    // Only fetch when user is authenticated
+    if (!isLoading && isSignedIn) {
+      fetchPopularVCs();
+    }
+  }, [isLoading, isSignedIn]);
+
   // Show loading state while checking auth
   if (isLoading || !isLoaded || !isSignedIn) {
     return (
@@ -54,6 +103,27 @@ export default function DashboardPage() {
       </div>
     );
   }
+
+  // Function to render star rating
+  const renderStarRating = (rating: number) => {
+    return (
+      <div className="flex items-center">
+        {[...Array(5)].map((_, i) => (
+          <svg 
+            key={i}
+            className={`w-4 h-4 ${i < Math.floor(rating) ? "text-yellow-400" : "text-gray-300 dark:text-gray-600"}`}
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        ))}
+        <span className="ml-1 text-sm text-gray-500 dark:text-gray-400">
+          {rating.toFixed(1)} ({popularVCs.find(vc => vc.rating === rating)?.reviewCount || 0})
+        </span>
+      </div>
+    );
+  };
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -83,7 +153,7 @@ export default function DashboardPage() {
               View Your Profile
             </Link>
             <Link 
-              href="/user-profile/reviews" 
+              href="/user-profile?tab=reviews" 
               className="flex items-center p-3 bg-gray-50 dark:bg-gray-900 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               <svg className="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
@@ -116,22 +186,36 @@ export default function DashboardPage() {
         {/* Popular VCs Card */}
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
           <h2 className="text-xl font-medium mb-4">Popular VCs</h2>
-          <div className="space-y-4">
-            {["Sequoia Capital", "Andreessen Horowitz", "Y Combinator", "Accel"].map((vc, index) => (
-              <div 
-                key={index} 
-                className="p-3 flex items-center justify-between border-b border-gray-100 dark:border-gray-700 last:border-0"
-              >
-                <span>{vc}</span>
-                <Link 
-                  href={`/vc/${vc.toLowerCase().replace(/\s+/g, '-')}`}
-                  className="text-sm text-black dark:text-white hover:underline"
+          {isLoadingVCs ? (
+            <div className="space-y-3">
+              {[...Array(4)].map((_, index) => (
+                <div key={index} className="animate-pulse p-3 border-b border-gray-100 dark:border-gray-700 last:border-0">
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+                  <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {popularVCs.map((vc) => (
+                <div 
+                  key={vc.id} 
+                  className="p-3 flex flex-col border-b border-gray-100 dark:border-gray-700 last:border-0"
                 >
-                  View
-                </Link>
-              </div>
-            ))}
-          </div>
+                  <div className="flex justify-between items-start">
+                    <span className="font-medium">{vc.name}</span>
+                    <Link 
+                      href={`/vc/${vc.slug}`}
+                      className="text-sm text-black dark:text-white hover:underline"
+                    >
+                      View
+                    </Link>
+                  </div>
+                  {renderStarRating(vc.rating)}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         
         {/* Recent Reviews Card */}

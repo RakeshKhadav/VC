@@ -66,6 +66,9 @@ export default function Header() {
         ) : isSignedIn ? (
           // User is signed in
           <>
+            <Link href="/dashboard" className="hidden md:block text-sm px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              Dashboard
+            </Link>
             <Link href="/reviews/new" className="hidden md:block text-sm px-4 py-2 rounded-md bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors">
               Write Review
             </Link>
@@ -85,12 +88,12 @@ export default function Header() {
                 <Link href="/user-profile" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                   Your Profile
                 </Link>
-                <Link href="/user-profile/reviews" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <Link 
+                  href="/user-profile" 
+                  onClick={() => (document.querySelector('button[aria-label="My Reviews"]') as HTMLElement)?.click()} 
+                  className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
                   Your Reviews
-                </Link>
-                <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
-                <Link href="/settings" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
-                  Settings
                 </Link>
               </div>
             </div>
