@@ -1,12 +1,13 @@
-import Image from "next/image";
-import Link from "next/link";
-import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/nextjs";
+"use client";
 
-import { ClerkProvider } from '@clerk/nextjs'
+import Link from "next/link";
+import Image from "next/image";
+import { useUser } from "@clerk/nextjs";
 
 export default function Home() {
+  const { isLoaded, isSignedIn, user } = useUser();
+
   return (
-    <ClerkProvider>
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
       <section className="py-20 px-4 md:px-8">
@@ -19,38 +20,50 @@ export default function Home() {
               A trusted platform for founders to rate and review VCs anonymously.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <SignedOut>
-                <Link 
-                  href="/sign-up" 
-                  className="px-6 py-3 rounded-md bg-black dark:bg-white text-white dark:text-black font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
-                >
-                  Write a Review
-                </Link>
-                
-                <Link 
-                  href="/sign-up" 
-                  className="px-6 py-3 rounded-md border border-gray-300 dark:border-gray-700 font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                >
-                  Explore Reviews
-                </Link>
-              </SignedOut>
-              
-              <SignedIn>
-                <Link 
-                  href="/reviews/new"
-                  className="px-6 py-3 rounded-md bg-black dark:bg-white text-white dark:text-black font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
-                >
-                  Write a Review
-                </Link>
-                
-                <Link 
-                  href="/reviews"
-                  className="px-6 py-3 rounded-md border border-gray-300 dark:border-gray-700 font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                >
-                  Explore Reviews
-                </Link>
-              </SignedIn>
+              {!isLoaded ? (
+                // Loading state
+                <div className="h-12 w-48 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse"></div>
+              ) : isSignedIn ? (
+                // User is signed in
+                <>
+                  <Link 
+                    href="/reviews/new"
+                    className="px-6 py-3 rounded-md bg-black dark:bg-white text-white dark:text-black font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
+                  >
+                    Write a Review
+                  </Link>
+                  
+                  <Link 
+                    href="/dashboard"
+                    className="px-6 py-3 rounded-md border border-gray-300 dark:border-gray-700 font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    Go to Dashboard
+                  </Link>
+                </>
+              ) : (
+                // User is signed out
+                <>
+                  <Link 
+                    href="/sign-up" 
+                    className="px-6 py-3 rounded-md bg-black dark:bg-white text-white dark:text-black font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
+                  >
+                    Write a Review
+                  </Link>
+                  
+                  <Link 
+                    href="/reviews" 
+                    className="px-6 py-3 rounded-md border border-gray-300 dark:border-gray-700 font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    Explore Reviews
+                  </Link>
+                </>
+              )}
             </div>
+            {isSignedIn && (
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Welcome back, {user?.firstName}! Your insights help other founders make better decisions.
+              </p>
+            )}
           </div>
           <div className="flex-1 relative h-64 md:h-96 w-full">
             {/* Placeholder for hero illustration */}
@@ -209,31 +222,36 @@ export default function Home() {
       {/* Get Started CTA */}
       <section className="py-20 px-4 md:px-8 bg-black dark:bg-white text-white dark:text-black">
         <div className="max-w-4xl mx-auto text-center space-y-8">
-          <h2 className="text-3xl md:text-4xl font-bold">Join the Founder Community</h2>
+          <h2 className="text-3xl md:text-4xl font-bold">
+            {isSignedIn ? "Share Your VC Experience" : "Join the Founder Community"}
+          </h2>
           <p className="text-xl text-gray-300 dark:text-gray-700">
-            Help build transparency in venture capital while finding the right partners for your startup.
+            {isSignedIn 
+              ? "Your anonymous reviews help build transparency in venture capital." 
+              : "Help build transparency in venture capital while finding the right partners for your startup."}
           </p>
           <div className="pt-4">
-            <SignedOut>
+            {!isLoaded ? (
+              // Loading state
+              <div className="h-12 w-48 mx-auto bg-gray-300 dark:bg-gray-700 rounded-md animate-pulse"></div>
+            ) : isSignedIn ? (
+              <Link 
+                href="/reviews/new"
+                className="inline-block px-8 py-4 rounded-md bg-white dark:bg-black text-black dark:text-white font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-lg"
+              >
+                Write Your Review
+              </Link>
+            ) : (
               <Link 
                 href="/sign-up" 
                 className="inline-block px-8 py-4 rounded-md bg-white dark:bg-black text-black dark:text-white font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-lg"
               >
                 Get Started
               </Link>
-            </SignedOut>
-            <SignedIn>
-              <Link 
-                href="/reviews/new"
-                className="inline-block px-8 py-4 rounded-md bg-white dark:bg-black text-black dark:text-white font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-lg"
-              >
-                Write Your First Review
-              </Link>
-            </SignedIn>
+            )}
           </div>
         </div>
       </section>
     </div>
-    </ClerkProvider>
   );
 }

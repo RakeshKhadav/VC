@@ -2,6 +2,15 @@ import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
+// Define a type for review objects
+interface Review {
+  id: string;
+  vcName: string;
+  rating: number;
+  content: string;
+  date: string;
+}
+
 export default async function UserReviewsPage() {
   const user = await currentUser();
   
@@ -10,26 +19,8 @@ export default async function UserReviewsPage() {
     redirect("/sign-in");
   }
 
-  // Mock data for reviews - in a real app this would come from your database
-  const mockReviews = [
-    {
-      id: "1",
-      vcName: "Sequoia Capital",
-      rating: 4,
-      date: "2025-03-15",
-      content: "Great experience overall. Very responsive and provided valuable guidance throughout our seed round.",
-    },
-    {
-      id: "2",
-      vcName: "Andreessen Horowitz",
-      rating: 5,
-      date: "2025-02-10",
-      content: "Exceptional support and connections. Their team went above and beyond to help us navigate challenges.",
-    }
-  ];
-
-  // For demonstration, we'll show empty state or mock data
-  const hasReviews = false; // Set to true to see mock data
+  // Here you would typically fetch the user's reviews from your database
+  const reviews: Review[] = []; // Empty for now, would be populated from database
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -100,9 +91,9 @@ export default async function UserReviewsPage() {
             </Link>
           </div>
           
-          {hasReviews ? (
+          {reviews.length > 0 ? (
             <div className="space-y-6">
-              {mockReviews.map((review) => (
+              {reviews.map((review) => (
                 <div key={review.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                   <div className="flex justify-between items-start mb-3">
                     <div>

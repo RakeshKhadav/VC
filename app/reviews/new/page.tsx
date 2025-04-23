@@ -1,4 +1,5 @@
 import { currentUser } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 import RequireAuth from "@/app/components/RequireAuth";
 import Link from "next/link";
 
@@ -7,6 +8,13 @@ export default async function SubmitReviewPage({
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
+  const user = await currentUser();
+  
+  // Redirect if not logged in
+  if (!user) {
+    redirect("/sign-in");
+  }
+  
   // Extract VC name from URL if provided
   const vcSlug = searchParams.vc as string | undefined;
   
