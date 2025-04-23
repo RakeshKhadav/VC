@@ -9,9 +9,19 @@ import {
   SignUpButton,
   useUser
 } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 export default function Header() {
   const { isLoaded, isSignedIn, user } = useUser();
+  const router = useRouter();
+  
+  // Function to handle navigation for protected routes
+  const handleProtectedNav = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
+    if (!isSignedIn) {
+      e.preventDefault();
+      router.push("/sign-up");
+    }
+  };
   
   return (
     <header className="sticky top-0 z-30 flex justify-between items-center px-6 py-4 border-b border-gray-100 dark:border-gray-800 bg-white/90 dark:bg-black/90 backdrop-blur-sm">
@@ -21,15 +31,31 @@ export default function Header() {
           <Link href="/" className="text-sm text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">
             Home
           </Link>
-          <Link href="/reviews" className="text-sm text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">
-            Explore Reviews
-          </Link>
-          <Link href="/about" className="text-sm text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">
-            About
-          </Link>
-          <Link href="/faq" className="text-sm text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">
-            FAQ
-          </Link>
+
+          {/* Show different navigation based on auth state */}
+          <SignedIn>
+            <Link href="/reviews" className="text-sm text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">
+              Explore Reviews
+            </Link>
+            <Link href="/about" className="text-sm text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">
+              About
+            </Link>
+            <Link href="/faq" className="text-sm text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">
+              FAQ
+            </Link>
+          </SignedIn>
+          
+          <SignedOut>
+            <Link href="/sign-up" onClick={(e) => handleProtectedNav(e, "/reviews")} className="text-sm text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">
+              Explore Reviews
+            </Link>
+            <Link href="/about" className="text-sm text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">
+              About
+            </Link>
+            <Link href="/faq" className="text-sm text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">
+              FAQ
+            </Link>
+          </SignedOut>
         </nav>
       </div>
       
@@ -72,9 +98,6 @@ export default function Header() {
         ) : (
           // User is signed out
           <>
-            <Link href="/reviews" className="hidden md:block text-sm px-4 py-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">
-              Explore Reviews
-            </Link>
             <SignInButton mode="modal">
               <button className="text-sm px-4 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                 Sign in
