@@ -2,8 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/nextjs";
 
+import { ClerkProvider } from '@clerk/nextjs'
+
 export default function Home() {
   return (
+    <ClerkProvider>
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
       <section className="py-20 px-4 md:px-8">
@@ -231,5 +234,6 @@ export default function Home() {
         </div>
       </section>
     </div>
+    </ClerkProvider>
   );
 }
