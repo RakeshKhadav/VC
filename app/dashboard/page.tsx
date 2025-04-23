@@ -1,18 +1,63 @@
-import { currentUser } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
-import Link from "next/link";
+"use client";
 
-export default async function DashboardPage() {
-  const user = await currentUser();
-  
-  // Redirect if not logged in
-  if (!user) {
-    redirect("/sign-in");
+import { useUser, useAuth } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+
+export default function DashboardPage() {
+  const { isLoaded, isSignedIn, user } = useUser();
+  const { getToken } = useAuth();
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Wait for Clerk to load and check auth status
+    if (!isLoaded) return;
+
+    async function checkAuth() {
+      try {
+        // Get a session token to verify auth status
+        const token = await getToken();
+        
+        if (!isSignedIn || !token) {
+          // Only redirect if we're sure the user isn't signed in
+          router.push(`/sign-in?redirect_url=${encodeURIComponent('/dashboard')}`);
+          return;
+        }
+        
+        // User is authenticated
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Authentication error:", error);
+        setIsLoading(false);
+      }
+    }
+
+    checkAuth();
+  }, [isLoaded, isSignedIn, router, getToken]);
+
+  // Show loading state while checking auth
+  if (isLoading || !isLoaded || !isSignedIn) {
+    return (
+      <div className="max-w-6xl mx-auto px-4 py-8 flex items-center justify-center min-h-[60vh]">
+        <div className="animate-pulse flex space-x-4">
+          <div className="rounded-full bg-gray-200 dark:bg-gray-700 h-12 w-12"></div>
+          <div className="flex-1 space-y-4 py-1">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+            <div className="space-y-2">
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Welcome, {user.firstName}!</h1>
+      <h1 className="text-3xl font-bold mb-8">Welcome, {user?.firstName || 'User'}!</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Quick Actions Card */}
