@@ -1,8 +1,5 @@
-Failed to compile.
-app/reviews/page.tsx
-Type error: Type '{ searchParams?: { [key: string]: string | string[] | undefined; } | undefined; }' does not satisfy the constraint 'PageProps'.
-  Types of property 'searchParams' are incompatible.
-    Type '{ [key: string]: string | string[] | undefined; } | undefined' is not assignable to type 'Promise<any> | undefined'.
-      Type '{ [key: string]: string | string[] | undefined; }' is missing the following properties from type 'Promise<any>': then, catch, finally, [Symbol.toStringTag]
-Next.js build worker exited with code: 1 and signal: null
+Error occurred prerendering page "/_not-found". Read more: https://nextjs.org/docs/messages/prerender-error
+Error: @clerk/clerk-react: Missing publishableKey. You can get your key at https://dashboard.clerk.com/last-active?path=api-keys.
+   
+ ⨯ Next.js build worker exited with code: 1 and signal: null
 Error: Command "npm run build" exited with 1
