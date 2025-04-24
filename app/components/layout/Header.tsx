@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
   SignedIn,
   SignedOut,
@@ -11,12 +10,15 @@ import {
 } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 
+import Logo from "@/app/components/common/Logo";
+import NavigationLink from "./NavigationLink";
+
 export default function Header() {
-  const { isLoaded, isSignedIn } = useUser(); // Removed unused 'user' variable
+  const { isLoaded, isSignedIn } = useUser();
   const router = useRouter();
   
   // Function to handle navigation for protected routes
-  const handleProtectedNav = (e: React.MouseEvent<HTMLAnchorElement>) => { // Removed unused 'path' parameter
+  const handleProtectedNav = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (!isSignedIn) {
       e.preventDefault();
       router.push("/sign-up");
@@ -26,35 +28,26 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-30 flex justify-between items-center px-6 py-4 border-b border-gray-100 dark:border-gray-800 bg-white/90 dark:bg-black/90 backdrop-blur-sm">
       <div className="flex items-center">
-        <Link href="/" className="font-medium text-lg mr-8">Backchannel</Link>
+        <Logo className="font-medium text-lg mr-8" />
         <nav className="hidden md:flex space-x-6">
-          <Link href="/" className="text-sm text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">
-            Home
-          </Link>
+          <NavigationLink href="/">Home</NavigationLink>
 
           {/* Show different navigation based on auth state */}
           <SignedIn>
-            <Link href="/reviews" className="text-sm text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">
-              Explore Reviews
-            </Link>
-            <Link href="/about" className="text-sm text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">
-              About
-            </Link>
-            <Link href="/faq" className="text-sm text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">
-              FAQ
-            </Link>
+            <NavigationLink href="/reviews">Explore Reviews</NavigationLink>
+            <NavigationLink href="/about">About</NavigationLink>
+            <NavigationLink href="/faq">FAQ</NavigationLink>
           </SignedIn>
           
           <SignedOut>
-            <Link href="/sign-up" onClick={(e) => handleProtectedNav(e)} className="text-sm text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">
+            <NavigationLink 
+              href="/sign-up" 
+              onClick={(e) => handleProtectedNav(e)}
+            >
               Explore Reviews
-            </Link>
-            <Link href="/about" className="text-sm text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">
-              About
-            </Link>
-            <Link href="/faq" className="text-sm text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">
-              FAQ
-            </Link>
+            </NavigationLink>
+            <NavigationLink href="/about">About</NavigationLink>
+            <NavigationLink href="/faq">FAQ</NavigationLink>
           </SignedOut>
         </nav>
       </div>
@@ -66,12 +59,18 @@ export default function Header() {
         ) : isSignedIn ? (
           // User is signed in
           <>
-            <Link href="/dashboard" className="hidden md:block text-sm px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <NavigationLink 
+              href="/dashboard" 
+              className="hidden md:block text-sm px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
               Dashboard
-            </Link>
-            <Link href="/reviews/new" className="hidden md:block text-sm px-4 py-2 rounded-md bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors">
+            </NavigationLink>
+            <NavigationLink 
+              href="/reviews/new" 
+              className="hidden md:block text-sm px-4 py-2 rounded-md bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
+            >
               Write Review
-            </Link>
+            </NavigationLink>
             <div className="relative group">
               <UserButton 
                 appearance={{
@@ -82,19 +81,25 @@ export default function Header() {
                 afterSignOutUrl="/"
               />
               <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 hidden group-hover:block">
-                <Link href="/dashboard" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <NavigationLink 
+                  href="/dashboard" 
+                  className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
                   Dashboard
-                </Link>
-                <Link href="/user-profile" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
-                  Your Profile
-                </Link>
-                <Link 
+                </NavigationLink>
+                <NavigationLink 
                   href="/user-profile" 
-                  onClick={() => (document.querySelector('button[aria-label="My Reviews"]') as HTMLElement)?.click()} 
+                  className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  Your Profile
+                </NavigationLink>
+                <NavigationLink 
+                  href="/user-profile" 
+                  onClick={() => (document.querySelector('button[aria-label="My Reviews"]') as HTMLElement)?.click()}
                   className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
                   Your Reviews
-                </Link>
+                </NavigationLink>
               </div>
             </div>
           </>
