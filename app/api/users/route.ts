@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuth } from '@clerk/nextjs/server';
 import { connectToDatabase } from '@/lib/db/mongodb';
 import User from '@/lib/db/models/User';
-import Review from '@/lib/db/models/Review';
 
 // GET current user's information including review view limits
 export async function GET(req: NextRequest) {
@@ -56,7 +55,7 @@ export async function GET(req: NextRequest) {
         isPremium: user.plan === 'premium'
       }
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error fetching user data:", error);
     return NextResponse.json(
       { error: "Failed to fetch user data" },
@@ -128,7 +127,7 @@ export async function PATCH(req: NextRequest) {
         isPremium: user.plan === 'premium'
       }
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error updating user:", error);
     return NextResponse.json(
       { error: "Failed to update user" },

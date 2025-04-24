@@ -72,7 +72,7 @@ export async function GET(
     
     // Return the review data
     return NextResponse.json({ review });
-  } catch (error: any) {
+  } catch (error: Error | unknown) {
     console.error("Error accessing review:", error);
     return NextResponse.json(
       { error: "Failed to retrieve review" },

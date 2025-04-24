@@ -52,7 +52,7 @@ export async function GET(
         pages: Math.ceil(totalReviews / limit)
       }
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error fetching VC details:", error);
     return NextResponse.json(
       { error: "Failed to fetch VC details" },

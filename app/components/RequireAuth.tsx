@@ -9,7 +9,7 @@ interface RequireAuthProps {
 }
 
 export default function RequireAuth({ children, fallback }: RequireAuthProps) {
-  const { user, isLoading, canViewReview, upgradeRequired, upgradeUser } = useUser();
+  const { isLoading, canViewReview, upgradeRequired, upgradeUser } = useUser();
   const [isUpgrading, setIsUpgrading] = useState(false);
 
   // Handle the upgrade process
@@ -46,7 +46,7 @@ export default function RequireAuth({ children, fallback }: RequireAuthProps) {
       <div className="p-6 max-w-md mx-auto bg-white rounded-xl shadow-md flex flex-col items-center space-y-4 mt-8">
         <div className="text-xl font-medium text-black">Upgrade Required</div>
         <p className="text-gray-500 text-center">
-          You've reached your limit of 6 reviews this month.
+          You&apos;ve reached your limit of 6 reviews this month.
           Upgrade to premium for unlimited access to all reviews!
         </p>
         

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db/mongodb';
 import VC from '@/lib/db/models/VC';
-import Review from '@/lib/db/models/Review';
 
 // GET VCs with pagination and sorting
 export async function GET(req: NextRequest) {
@@ -16,7 +15,7 @@ export async function GET(req: NextRequest) {
     await connectToDatabase();
     
     // Build query
-    const query: any = {};
+    const query: Record<string, any> = {};
     if (search) {
       query.$or = [
         { name: { $regex: new RegExp(search, 'i') } }
@@ -27,7 +26,7 @@ export async function GET(req: NextRequest) {
     const skip = (page - 1) * limit;
     
     // Sort options
-    let sortOptions: any = { avgRating: -1 }; // Default sort by rating
+    let sortOptions: { [key: string]: 1 | -1 } = { avgRating: -1 }; // Default sort by rating
     switch (sort) {
       case 'name':
         sortOptions = { name: 1 };
@@ -58,7 +57,7 @@ export async function GET(req: NextRequest) {
         pages: Math.ceil(total / limit)
       }
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error fetching VCs:", error);
     return NextResponse.json(
       { error: "Failed to fetch VCs" }, 

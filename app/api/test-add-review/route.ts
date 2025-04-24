@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db/mongodb';
 import Review from '@/lib/db/models/Review';
 import VC from '@/lib/db/models/VC';
-import mongoose from 'mongoose';
 
 // Helper function to create a URL-friendly slug from a string
 function createSlug(name: string): string {
@@ -120,7 +119,7 @@ export async function POST(req: NextRequest) {
       message: "TEST MODE: Review added successfully"
     }, { status: 201 });
     
-  } catch (error: any) {
+  } catch (error) {
     console.error("TEST ENDPOINT: Error creating review:", error);
     return NextResponse.json(
       { error: "Failed to create test review" },

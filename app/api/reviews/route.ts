@@ -3,7 +3,6 @@ import { getAuth } from '@clerk/nextjs/server';
 import { connectToDatabase } from '@/lib/db/mongodb';
 import Review from '@/lib/db/models/Review';
 import VC from '@/lib/db/models/VC';
-import mongoose from 'mongoose';
 
 // Helper function to create a URL-friendly slug from a string
 function createSlug(name: string): string {
@@ -23,13 +22,12 @@ export async function GET(req: NextRequest) {
     const vcName = searchParams.get('vcName') || '';
     const industry = searchParams.get('industry') || '';
     const year = searchParams.get('year') || '';
-    const minRating = parseFloat(searchParams.get('minRating') || '0');
     const sort = searchParams.get('sort') || 'newest';
     
     await connectToDatabase();
     
     // Build query filters
-    const query: any = {};
+    const query: Record<string, any> = {};
     
     if (vcName) query.vcName = { $regex: new RegExp(vcName, 'i') };
     if (industry) query.industry = industry;
@@ -39,7 +37,7 @@ export async function GET(req: NextRequest) {
     const skip = (page - 1) * limit;
     
     // Determine sort order
-    const sortOptions: any = {};
+    const sortOptions: Record<string, any> = {};
     if (sort === 'newest') {
       sortOptions.createdAt = -1;
     } else if (sort === 'highest') {
