@@ -1,12 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 #.md files
-code.md
-error.md
-home.md
-newer.md
-pages.md
-z-clerk.md
+*.md
 
 # dependencies
 /node_modules

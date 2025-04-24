@@ -6,14 +6,19 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed-db": "ts-node --project tsconfig.json scripts/seed-db.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.17.0",
     "@heroui/alert": "^2.2.17",
     "@heroui/react": "^2.7.6",
+    "dotenv": "^16.5.0",
     "framer-motion": "^12.8.0",
+    "mongodb": "^6.16.0",
+    "mongoose": "^8.13.2",
     "next": "15.3.1",
+    "node-fetch": "^3.3.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
@@ -28,6 +33,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.3.1",
     "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   }
 }

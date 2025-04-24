@@ -6,14 +6,16 @@ import Link from "next/link";
 import { useEffect, useState, Suspense } from "react";
 import StarRating from "@/app/components/ui/StarRating";
 import { useNotification } from "@/app/context/NotificationContext";
+import SessionCheck from "@/app/components/auth/SessionCheck";
 
 // Component to handle the search params logic
 function ReviewFormContent() {
-  const { isLoaded, isSignedIn } = useUser(); // Removed unused 'user' variable
+  const { isLoaded, isSignedIn, user } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sessionValid, setSessionValid] = useState(true);
   const { showAlert } = useNotification();
   
   // Form state management
@@ -128,9 +130,54 @@ function ReviewFormContent() {
     setIsSubmitting(true);
     
     try {
-      // In a real app, you would send the data to your API here
-      // For now, we'll just simulate a successful submission
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Get the VC name based on selection
+      let vcName = "";
+      if (selectedVC === 'other') {
+        vcName = otherVC;
+      } else {
+        const selectedVCOption = vcOptions.find(vc => vc.slug === selectedVC);
+        vcName = selectedVCOption ? selectedVCOption.name : "";
+      }
+      
+      // Prepare data to match the API's expected format
+      const reviewData = {
+        vcName,
+        vcWebsite: "", // Optional, not collected in the form
+        companyName: companyInfo.name,
+        companyWebsite: companyInfo.website,
+        industry: companyInfo.sector,
+        role: companyInfo.role,
+        companyLocation: companyInfo.location,
+        ratings: {
+          responsiveness: ratings.responsiveness,
+          fairness: ratings.fairness,
+          support: ratings.support
+        },
+        reviewText: reviewDetails.content,
+        fundingStage: reviewDetails.stage,
+        investmentAmount: reviewDetails.amount,
+        yearOfInteraction: reviewDetails.year,
+        isAnonymous: reviewDetails.anonymous
+      };
+      
+      console.log("Submitting review:", reviewData);
+      
+      // Send data to API without any authentication headers
+      const response = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(reviewData)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to submit review");
+      }
+      
+      const result = await response.json();
+      console.log("Review submitted successfully:", result);
       
       showAlert("Your review has been submitted successfully!", "success", {
         title: "Thank you for your feedback",
@@ -145,7 +192,7 @@ function ReviewFormContent() {
         router.push("/reviews");
       }, 2000);
       
-    } catch (error) { 
+    } catch (error: any) { 
       showAlert("An error occurred while submitting your review. Please try again.", "danger", {
         title: "Submission Error",
         autoClose: true,
@@ -610,8 +657,11 @@ function LoadingForm() {
 // Wrap the main component with Suspense
 export default function SubmitReviewPage() {
   return (
-    <Suspense fallback={<LoadingForm />}>
-      <ReviewFormContent />
-    </Suspense>
+    <>
+      <SessionCheck />
+      <Suspense fallback={<LoadingForm />}>
+        <ReviewFormContent />
+      </Suspense>
+    </>
   );
 }
