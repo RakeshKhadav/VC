@@ -6,10 +6,10 @@ import Review from '@/lib/db/models/Review';
 // GET VC by slug with reviews information
 export async function GET(
   req: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = params;
+    const { slug } = await params;
     const searchParams = req.nextUrl.searchParams;
     const includeReviews = searchParams.get('includeReviews') === 'true';
     const page = parseInt(searchParams.get('page') || '1');
