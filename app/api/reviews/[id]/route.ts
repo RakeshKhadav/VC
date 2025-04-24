@@ -5,13 +5,18 @@ import Review from '@/lib/db/models/Review';
 import User from '@/lib/db/models/User';
 import mongoose from 'mongoose';
 
+interface RouteContext {
+  params: Promise<{ id: string }>;
+}
+
 // GET review by ID with freemium access control
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: RouteContext
 ) {
   try {
-    const { id } = await params;
+    const resolvedParams = await context.params;
+    const id = resolvedParams.id;
     const { userId } = getAuth(request);
     
     // Check if user is authenticated
