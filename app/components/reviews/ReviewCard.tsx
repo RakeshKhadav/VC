@@ -23,10 +23,8 @@ export interface ReviewCardProps {
 }
 
 export default function ReviewCard({
-  id,
   vcName,
   vcSlug,
-  author,
   companyName,
   companyRole,
   date,

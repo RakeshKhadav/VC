@@ -65,7 +65,7 @@ export default function Button({
     return (
       <Link 
         href={href}
-        onClick={onClick as any}
+        onClick={onClick as React.MouseEventHandler<HTMLAnchorElement>}
         className={combinedClassName}
         aria-disabled={disabled}
       >

@@ -10,12 +10,11 @@ import SessionCheck from "@/app/components/auth/SessionCheck";
 
 // Component to handle the search params logic
 function ReviewFormContent() {
-  const { isLoaded, isSignedIn, user } = useUser();
+  const { isLoaded, isSignedIn } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [sessionValid, setSessionValid] = useState(true);
   const { showAlert } = useNotification();
   
   // Form state management
@@ -192,7 +191,7 @@ function ReviewFormContent() {
         router.push("/reviews");
       }, 2000);
       
-    } catch (error: any) { 
+    } catch (error) { 
       showAlert("An error occurred while submitting your review. Please try again.", "danger", {
         title: "Submission Error",
         autoClose: true,

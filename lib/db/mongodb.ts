@@ -6,7 +6,7 @@ interface Cached {
   promise: Promise<mongoose.Mongoose> | null;
 }
 
-// Define the global type
+// Define the global type correctly
 declare global {
   var mongooseCache: Cached | undefined;
 }
