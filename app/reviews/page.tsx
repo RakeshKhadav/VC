@@ -44,6 +44,9 @@ async function getReviews(searchParams: { [key: string]: string | string[] | und
   const year = typeof searchParams?.year === 'string' ? searchParams.year : "";
   const sortBy = typeof searchParams?.sortBy === 'string' ? searchParams.sortBy : "newest";
   
+  // Demonstrate how these variables would be used in an actual implementation
+  console.log({query, sector, stage, minRating, year, sortBy});
+  
   // TODO: Replace with actual database call
   // Example implementation with a database:
   // const whereClause = {};
@@ -78,7 +81,7 @@ async function getReviews(searchParams: { [key: string]: string | string[] | und
   //   default:
   //     sortOrder.createdAt = 'desc';
   // }
-  //
+  //  
   // return await db.reviews.findMany({
   //   where: whereClause,
   //   skip: (page - 1) * limit,
