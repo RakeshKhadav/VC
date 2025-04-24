@@ -101,10 +101,10 @@ export async function GET(req: NextRequest) {
 }
 
 // POST a new review
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     // Extract authentication details from the request
-    const auth = getAuth(req);
+    const auth = getAuth(request);
     const { userId } = auth;
     
     // Get an anonymous ID if not authenticated
@@ -112,7 +112,8 @@ export async function POST(req: NextRequest) {
     
     console.log("Processing review submission from:", userId ? "Authenticated user" : "Anonymous user");
     
-    const reviewData = await req.json();
+    // Handle the request data as a Promise in Next.js 15
+    const reviewData = await request.json();
     await connectToDatabase();
     
     console.log("Connected to database");
