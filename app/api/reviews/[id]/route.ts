@@ -8,7 +8,7 @@ import mongoose from 'mongoose';
 // GET review by ID with freemium access control
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Record<string, string> }
 ) {
   try {
     const { id } = context.params;
