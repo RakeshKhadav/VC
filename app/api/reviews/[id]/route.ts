@@ -5,12 +5,19 @@ import Review from '@/lib/db/models/Review';
 import User from '@/lib/db/models/User';
 import mongoose from 'mongoose';
 
+type RouteParams = {
+  params: {
+    id: string;
+  };
+};
+
 // GET review by ID with freemium access control
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams
 ) {
   try {
+    const { id } = params;
     const { userId } = getAuth(req);
     
     // Check if user is authenticated
@@ -25,12 +32,12 @@ export async function GET(
     await connectToDatabase();
     
     // Validate review ID
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: "Invalid review ID" }, { status: 400 });
     }
     
     // Find the review
-    const review = await Review.findById(params.id);
+    const review = await Review.findById(id);
     
     if (!review) {
       return NextResponse.json({ error: "Review not found" }, { status: 404 });
