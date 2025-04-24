@@ -8,10 +8,10 @@ import mongoose from 'mongoose';
 // GET review by ID with freemium access control
 export async function GET(
   request: NextRequest,
-  context: { params: Record<string, string> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = context.params;
+    const { id } = params;
     const { userId } = getAuth(request);
     
     // Check if user is authenticated
