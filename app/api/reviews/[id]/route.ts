@@ -5,20 +5,14 @@ import Review from '@/lib/db/models/Review';
 import User from '@/lib/db/models/User';
 import mongoose from 'mongoose';
 
-type RouteParams = {
-  params: {
-    id: string;
-  };
-};
-
 // GET review by ID with freemium access control
 export async function GET(
-  req: NextRequest,
-  { params }: RouteParams
+  request: NextRequest,
+  { params }: { params: { id: string } }
 ) {
   try {
     const { id } = params;
-    const { userId } = getAuth(req);
+    const { userId } = getAuth(request);
     
     // Check if user is authenticated
     if (!userId) {
