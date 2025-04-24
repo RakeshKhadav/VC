@@ -27,7 +27,11 @@ export async function GET(req: NextRequest) {
     await connectToDatabase();
     
     // Build query filters
-    const query: Record<string, any> = {};
+    const query: {
+      vcName?: { $regex: RegExp };
+      industry?: string;
+      yearOfInteraction?: string;
+    } = {};
     
     if (vcName) query.vcName = { $regex: new RegExp(vcName, 'i') };
     if (industry) query.industry = industry;
@@ -37,7 +41,7 @@ export async function GET(req: NextRequest) {
     const skip = (page - 1) * limit;
     
     // Determine sort order
-    const sortOptions: Record<string, any> = {};
+    const sortOptions: { [key: string]: 1 | -1 } = {};
     if (sort === 'newest') {
       sortOptions.createdAt = -1;
     } else if (sort === 'highest') {
@@ -87,7 +91,7 @@ export async function GET(req: NextRequest) {
         pages: Math.ceil(total / limit)
       }
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching reviews:", error);
     return NextResponse.json(
       { error: "Failed to fetch reviews" },
@@ -218,7 +222,7 @@ export async function POST(req: NextRequest) {
       review: review
     }, { status: 201 });
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating review:", error);
     return NextResponse.json(
       { error: "Failed to create review" },

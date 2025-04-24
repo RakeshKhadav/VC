@@ -15,7 +15,9 @@ export async function GET(req: NextRequest) {
     await connectToDatabase();
     
     // Build query
-    const query: Record<string, any> = {};
+    const query: {
+      $or?: Array<{ name: { $regex: RegExp } }>;
+    } = {};
     if (search) {
       query.$or = [
         { name: { $regex: new RegExp(search, 'i') } }
