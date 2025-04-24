@@ -3,11 +3,12 @@
 import { useUser } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import StarRating from "@/app/components/ui/StarRating";
 import { useNotification } from "@/app/context/NotificationContext";
 
-export default function SubmitReviewPage() {
+// Component to handle the search params logic
+function ReviewFormContent() {
   const { isLoaded, isSignedIn } = useUser(); // Removed unused 'user' variable
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -556,5 +557,61 @@ export default function SubmitReviewPage() {
         </ul>
       </div>
     </div>
+  );
+}
+
+// Loading fallback component
+function LoadingForm() {
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-8">
+      <div className="mb-8">
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
+      </div>
+      
+      <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-64 mb-8"></div>
+      
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+        <div className="space-y-6">
+          <div className="animate-pulse">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-2"></div>
+            <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+          </div>
+          
+          <div className="animate-pulse">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-2"></div>
+                <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+              </div>
+              <div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-2"></div>
+                <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="animate-pulse">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-4"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+          </div>
+          
+          <div className="animate-pulse">
+            <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Wrap the main component with Suspense
+export default function SubmitReviewPage() {
+  return (
+    <Suspense fallback={<LoadingForm />}>
+      <ReviewFormContent />
+    </Suspense>
   );
 }

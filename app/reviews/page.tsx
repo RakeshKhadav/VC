@@ -1,5 +1,7 @@
 import Link from "next/link";
 import StarRating from "@/app/components/ui/StarRating";
+import ReviewFilters from "@/app/components/ui/ReviewFilters";
+import { Suspense } from "react";
 
 // Define review data type for strong typing
 export interface Review {
@@ -29,20 +31,59 @@ const calculateAverageRating = (ratings: { responsiveness: number, fairness: num
 };
 
 // This function would fetch reviews from your database
-async function getReviews(searchQuery?: string, page: number = 1) {
+async function getReviews(searchParams: { [key: string]: string | string[] | undefined }) {
+  // Extract filter parameters
+  const query = typeof searchParams?.query === 'string' ? searchParams.query : "";
+  const pageParam = typeof searchParams?.page === 'string' ? searchParams.page : "1";
+  const page = parseInt(pageParam);
+  
+  // Get additional filters
+  const sector = typeof searchParams?.sector === 'string' ? searchParams.sector : "";
+  const stage = typeof searchParams?.stage === 'string' ? searchParams.stage : "";
+  const minRating = typeof searchParams?.minRating === 'string' ? searchParams.minRating : "";
+  const year = typeof searchParams?.year === 'string' ? searchParams.year : "";
+  const sortBy = typeof searchParams?.sortBy === 'string' ? searchParams.sortBy : "newest";
+  
   // TODO: Replace with actual database call
   // Example implementation with a database:
+  // const whereClause = {};
+  //
+  // if (query) {
+  //   whereClause.OR = [
+  //     { vcName: { contains: query, mode: 'insensitive' } },
+  //     { sector: { contains: query, mode: 'insensitive' } },
+  //     { content: { contains: query, mode: 'insensitive' } }
+  //   ];
+  // }
+  //
+  // if (sector) whereClause.sector = sector;
+  // if (stage) whereClause.stage = stage;
+  // if (minRating) whereClause.averageRating = { gte: parseFloat(minRating) };
+  // if (year) whereClause.year = parseInt(year);
+  //
+  // const sortOrder = {};
+  // switch (sortBy) {
+  //   case 'newest':
+  //     sortOrder.createdAt = 'desc';
+  //     break;
+  //   case 'oldest':
+  //     sortOrder.createdAt = 'asc';
+  //     break;
+  //   case 'highest':
+  //     sortOrder.averageRating = 'desc';
+  //     break;
+  //   case 'lowest':
+  //     sortOrder.averageRating = 'asc';
+  //     break;
+  //   default:
+  //     sortOrder.createdAt = 'desc';
+  // }
+  //
   // return await db.reviews.findMany({
-  //   where: searchQuery ? {
-  //     OR: [
-  //       { vcName: { contains: searchQuery, mode: 'insensitive' } },
-  //       { sector: { contains: searchQuery, mode: 'insensitive' } },
-  //       { content: { contains: searchQuery, mode: 'insensitive' } }
-  //     ]
-  //   } : undefined,
+  //   where: whereClause,
   //   skip: (page - 1) * limit,
   //   take: limit,
-  //   orderBy: { createdAt: 'desc' }
+  //   orderBy: sortOrder
   // });
   
   return {
@@ -53,67 +94,79 @@ async function getReviews(searchQuery?: string, page: number = 1) {
   };
 }
 
-// Update type definition to match Next.js 15's requirements
-export default async function ReviewsPage(props: {
-  params?: Promise<{ slug: string }>;
-  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
-  // Only extract searchParams since params isn't used in this component
-  const searchParams = props.searchParams ? await props.searchParams : {};
-  
-  const query = typeof searchParams?.query === 'string' ? searchParams.query : "";
-  const pageParam = typeof searchParams?.page === 'string' ? searchParams.page : "1";
-  const page = parseInt(pageParam);
-  
+// Loading fallback component
+function ReviewsLoading() {
+  return (
+    <div className="space-y-6">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm animate-pulse">
+          <div className="flex justify-between items-start">
+            <div className="w-1/3">
+              <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mt-2"></div>
+            </div>
+            <div className="flex items-center">
+              <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full mr-2"></div>
+              <div className="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            </div>
+          </div>
+          <div className="mt-4 grid grid-cols-3 gap-4">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          </div>
+          <div className="mt-4">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mt-2"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mt-2"></div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Main review list component
+async function ReviewsList({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
   // Fetch reviews from database
-  const { reviews, currentPage, totalPages } = await getReviews(query, page);
+  const { reviews, currentPage, totalPages } = await getReviews(searchParams);
   
-  // Calculate total pages for pagination
+  // Extract query for pagination
+  const query = typeof searchParams?.query === 'string' ? searchParams.query : "";
+  
+  // Calculate pagination info
   const hasNextPage = currentPage < totalPages;
   const hasPrevPage = currentPage > 1;
+
+  // Check if any filter is applied
+  const hasFilters = Boolean(
+    query || 
+    searchParams?.sector || 
+    searchParams?.stage || 
+    searchParams?.minRating || 
+    searchParams?.year || 
+    (searchParams?.sortBy && searchParams?.sortBy !== 'newest')
+  );
+
+  // Generate additional query string for pagination URLs
+  const additionalQueryParams = new URLSearchParams();
+  
+  // Safely process searchParams for pagination
+  if (searchParams) {
+    // Extract specific parameters we know are used in our app
+    const paramKeys = ['query', 'sector', 'stage', 'minRating', 'year', 'sortBy'];
+    for (const key of paramKeys) {
+      const value = searchParams[key];
+      if (key !== 'page' && value !== undefined) {
+        additionalQueryParams.set(key, value.toString());
+      }
+    }
+  }
+  
+  const queryString = additionalQueryParams.toString();
   
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">VC Reviews</h1>
-        
-        <div className="flex space-x-2">
-          <Link 
-            href="/reviews/new" 
-            className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-md font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
-          >
-            Write a Review
-          </Link>
-          
-          <button 
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-          >
-            Filter
-          </button>
-        </div>
-      </div>
-      
-      {/* Search and filters */}
-      <div className="mb-8 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-        <form action="/reviews" method="GET" className="flex gap-2">
-          <div className="flex-1">
-            <input
-              type="text"
-              name="query"
-              placeholder="Search for VC firms or by industry..."
-              defaultValue={query}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-            />
-          </div>
-          <button 
-            type="submit"
-            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-          >
-            Search
-          </button>
-        </form>
-      </div>
-      
+    <>
       {/* Reviews list */}
       <div className="space-y-6">
         {reviews.length > 0 ? (
@@ -180,7 +233,9 @@ export default async function ReviewsPage(props: {
           <div className="bg-white dark:bg-gray-800 rounded-lg p-8 shadow-sm text-center">
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">No reviews found</h3>
             <p className="mt-2 text-gray-600 dark:text-gray-400">
-              {query ? `No reviews match your search for "${query}"` : "Be the first to write a review!"}
+              {hasFilters
+                ? "No reviews match your search criteria."
+                : "Be the first to write a review!"}
             </p>
             <div className="mt-6">
               <Link 
@@ -195,11 +250,11 @@ export default async function ReviewsPage(props: {
       </div>
       
       {/* Pagination */}
-      {reviews.length > 0 && (
+      {reviews.length > 0 && totalPages > 0 && (
         <div className="mt-8 flex justify-center">
           <div className="inline-flex items-center rounded-md">
             <Link 
-              href={hasPrevPage ? `/reviews?page=${currentPage - 1}${query ? `&query=${query}` : ''}` : '#'} 
+              href={hasPrevPage ? `/reviews?page=${currentPage - 1}${queryString ? `&${queryString}` : ''}` : '#'} 
               className={`px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-l-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 ${!hasPrevPage ? 'opacity-50 cursor-not-allowed' : ''}`}
               aria-disabled={!hasPrevPage}
             >
@@ -222,7 +277,7 @@ export default async function ReviewsPage(props: {
               return (
                 <Link 
                   key={pageToShow}
-                  href={`/reviews?page=${pageToShow}${query ? `&query=${query}` : ''}`}
+                  href={`/reviews?page=${pageToShow}${queryString ? `&${queryString}` : ''}`}
                   className={`px-4 py-2 border-t border-b ${i < 4 ? 'border-r' : ''} border-gray-300 dark:border-gray-600 
                     ${currentPage === pageToShow ? 'bg-gray-50 dark:bg-gray-700 text-black dark:text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
                 >
@@ -232,7 +287,7 @@ export default async function ReviewsPage(props: {
             })}
             
             <Link 
-              href={hasNextPage ? `/reviews?page=${currentPage + 1}${query ? `&query=${query}` : ''}` : '#'}
+              href={hasNextPage ? `/reviews?page=${currentPage + 1}${queryString ? `&${queryString}` : ''}` : '#'}
               className={`px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-r-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 ${!hasNextPage ? 'opacity-50 cursor-not-allowed' : ''}`}
               aria-disabled={!hasNextPage}
             >
@@ -241,6 +296,38 @@ export default async function ReviewsPage(props: {
           </div>
         </div>
       )}
+    </>
+  );
+}
+
+// Main page component
+export default function ReviewsPage({ 
+  searchParams 
+}: { 
+  searchParams?: { [key: string]: string | string[] | undefined } 
+}) {
+  return (
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">VC Reviews</h1>
+        
+        <Link 
+          href="/reviews/new" 
+          className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-md font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
+        >
+          Write a Review
+        </Link>
+      </div>
+      
+      {/* Search and filters */}
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+        <ReviewFilters />
+      </div>
+      
+      {/* Reviews list with suspense */}
+      <Suspense fallback={<ReviewsLoading />}>
+        <ReviewsList searchParams={searchParams || {}} />
+      </Suspense>
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { useUser, useAuth } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 
 // Define a type for review objects
 interface Review {
@@ -15,7 +15,8 @@ interface Review {
   date: string;
 }
 
-export default function UserProfilePage() {
+// Component to handle the search params logic
+function ProfileContent() {
   const { isLoaded, isSignedIn, user } = useUser();
   const { getToken } = useAuth();
   const router = useRouter();
@@ -301,5 +302,32 @@ export default function UserProfilePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Loading fallback component
+function LoadingProfile() {
+  return (
+    <div className="max-w-6xl mx-auto px-4 py-8 flex items-center justify-center min-h-[60vh]">
+      <div className="animate-pulse flex space-x-4">
+        <div className="rounded-full bg-gray-200 dark:bg-gray-700 h-12 w-12"></div>
+        <div className="flex-1 space-y-4 py-1">
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+          <div className="space-y-2">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Wrap the main component with Suspense
+export default function UserProfilePage() {
+  return (
+    <Suspense fallback={<LoadingProfile />}>
+      <ProfileContent />
+    </Suspense>
   );
 }
