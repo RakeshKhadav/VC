@@ -225,8 +225,16 @@ export async function POST(request: NextRequest) {
     
   } catch (error: unknown) {
     console.error("Error creating review:", error);
+    
+    // More detailed error logging for debugging
+    let errorMessage = "Failed to create review";
+    if (error instanceof Error) {
+      errorMessage = `${errorMessage}: ${error.message}`;
+      console.error("Error stack:", error.stack);
+    }
+    
     return NextResponse.json(
-      { error: "Failed to create review" },
+      { error: errorMessage },
       { status: 500 }
     );
   }
