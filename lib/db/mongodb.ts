@@ -6,8 +6,9 @@ interface Cached {
   promise: Promise<mongoose.Mongoose> | null;
 }
 
-// Define the global type correctly
+// Define global type that works with modern TypeScript
 declare global {
+  // eslint-disable-next-line no-var
   var mongooseCache: Cached | undefined;
 }
 
