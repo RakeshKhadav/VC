@@ -130,12 +130,15 @@ function ReviewsLoading() {
 }
 
 // Main review list component
-async function ReviewsList({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
+async function ReviewsList({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+  // Await the searchParams Promise before using it
+  const resolvedSearchParams = await searchParams;
+  
   // Fetch reviews from database
-  const { reviews, currentPage, totalPages } = await getReviews(searchParams);
+  const { reviews, currentPage, totalPages } = await getReviews(resolvedSearchParams);
   
   // Extract query for pagination
-  const query = typeof searchParams?.query === 'string' ? searchParams.query : "";
+  const query = typeof resolvedSearchParams?.query === 'string' ? resolvedSearchParams.query : "";
   
   // Calculate pagination info
   const hasNextPage = currentPage < totalPages;
@@ -144,22 +147,22 @@ async function ReviewsList({ searchParams }: { searchParams: { [key: string]: st
   // Check if any filter is applied
   const hasFilters = Boolean(
     query || 
-    searchParams?.sector || 
-    searchParams?.stage || 
-    searchParams?.minRating || 
-    searchParams?.year || 
-    (searchParams?.sortBy && searchParams?.sortBy !== 'newest')
+    resolvedSearchParams?.sector || 
+    resolvedSearchParams?.stage || 
+    resolvedSearchParams?.minRating || 
+    resolvedSearchParams?.year || 
+    (resolvedSearchParams?.sortBy && resolvedSearchParams?.sortBy !== 'newest')
   );
 
   // Generate additional query string for pagination URLs
   const additionalQueryParams = new URLSearchParams();
   
   // Safely process searchParams for pagination
-  if (searchParams) {
+  if (resolvedSearchParams) {
     // Extract specific parameters we know are used in our app
     const paramKeys = ['query', 'sector', 'stage', 'minRating', 'year', 'sortBy'];
     for (const key of paramKeys) {
-      const value = searchParams[key];
+      const value = resolvedSearchParams[key];
       if (key !== 'page' && value !== undefined) {
         additionalQueryParams.set(key, value.toString());
       }
@@ -307,7 +310,7 @@ async function ReviewsList({ searchParams }: { searchParams: { [key: string]: st
 export default function ReviewsPage({ 
   searchParams 
 }: { 
-  searchParams?: { [key: string]: string | string[] | undefined } 
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }> 
 }) {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -322,14 +325,16 @@ export default function ReviewsPage({
         </Link>
       </div>
       
-      {/* Search and filters */}
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-        <ReviewFilters />
-      </div>
+      {/* Search and filters with Suspense boundary */}
+      <Suspense fallback={<div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm animate-pulse h-20"></div>}>
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+          <ReviewFilters />
+        </div>
+      </Suspense>
       
       {/* Reviews list with suspense */}
       <Suspense fallback={<ReviewsLoading />}>
-        <ReviewsList searchParams={searchParams || {}} />
+        <ReviewsList searchParams={searchParams || Promise.resolve({})} />
       </Suspense>
     </div>
   );
