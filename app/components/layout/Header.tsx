@@ -30,7 +30,6 @@ export default function Header() {
       <div className="flex items-center">
         <Logo className="font-medium text-lg mr-8" />
         <nav className="hidden md:flex space-x-6">
-          <NavigationLink href="/">Home</NavigationLink>
 
           {/* Show different navigation based on auth state */}
           <SignedIn>
@@ -78,7 +77,7 @@ export default function Header() {
                     userButtonAvatarBox: "w-8 h-8",
                   }
                 }}
-                afterSignOutUrl="/"
+                afterSignOutUrl="/reviews"
               />
               <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 hidden group-hover:block">
                 <NavigationLink 

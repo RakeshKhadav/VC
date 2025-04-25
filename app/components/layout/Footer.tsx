@@ -41,7 +41,6 @@ export default function Footer() {
           <div className="col-span-1">
             <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Navigation</h3>
             <ul className="space-y-3">
-              <li><Link href="/" className="text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">Home</Link></li>
               <li><Link href="/reviews" className="text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">Explore Reviews</Link></li>
               <li><Link href="/reviews/new" className="text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">Write a Review</Link></li>
               <li><Link href="/faq" className="text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">FAQ</Link></li>
@@ -54,7 +53,6 @@ export default function Footer() {
             <ul className="space-y-3">
               <li><Link href="/about" className="text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">About Us</Link></li>
               <li><Link href="/contact" className="text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">Contact</Link></li>
-              <li><Link href="/careers" className="text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">Careers</Link></li>
             </ul>
           </div>
 
