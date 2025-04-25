@@ -46,7 +46,7 @@ export async function getClerkUserDetails(userId: string) {
  * @param userId - The Clerk user ID
  */
 export async function directStoreUserInDb(userId: string) {
-  const { default: mongoose } = await import('mongoose');
+  // Remove unused mongoose import
   const { connectToDatabase } = await import('@/lib/db/mongodb');
   const { default: User } = await import('@/lib/db/models/User');
   

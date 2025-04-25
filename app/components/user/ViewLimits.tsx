@@ -102,7 +102,7 @@ export default function ViewLimits() {
                 </span>
               ) : (
                 <span className="text-red-600 dark:text-red-400">
-                  You've reached your monthly limit of 6 review views.
+                  You&apos;ve reached your monthly limit of 6 review views.
                 </span>
               )
             ) : (
