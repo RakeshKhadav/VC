@@ -1,12 +1,11 @@
-import Link from "next/link";
-import { Suspense } from "react";
-import ReviewFilters from "@/app/components/ui/ReviewFilters";
-import VCCard from "@/app/components/reviews/VCCard";
-import { connectToDatabase } from "@/lib/db/mongodb";
-import VC from "@/lib/db/models/VC";
+"use client";
 
-// Define VC data type for strong typing
-export interface VCData {
+import Link from "next/link";
+import { FormEvent, useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import VCCard from "../components/reviews/VCCard";
+
+interface VCData {
   _id: string;
   name: string;
   slug: string;
@@ -19,271 +18,82 @@ export interface VCData {
   lastReviewDate?: string;
 }
 
-// This function fetches all VCs from the database
-async function getVCs(searchParams: { [key: string]: string | string[] | undefined }) {
-  // Extract filter parameters
-  const query = typeof searchParams?.query === 'string' ? searchParams.query : "";
-  const pageParam = typeof searchParams?.page === 'string' ? searchParams.page : "1";
-  const page = parseInt(pageParam) || 1;
-  const limit = 9; // Show 9 VCs per page
-  
-  try {
-    // Connect to MongoDB
-    await connectToDatabase();
+// Client component for search functionality
+export default function ReviewsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('query') || '');
+  const [sortOption, setSortOption] = useState(searchParams.get('sortBy') || 'rating');
+  const [vcFirms, setVcFirms] = useState<VCData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Handle form submission for searching
+  const handleSearch = (e: FormEvent) => {
+    e.preventDefault();
     
-    // Build filter object based on search params
-    const filter: any = {};
+    // Build the query parameters
+    const params = new URLSearchParams();
+    if (searchQuery) params.set('query', searchQuery);
+    if (sortOption !== 'rating') params.set('sortBy', sortOption);
     
-    // Text search if query is provided
-    if (query) {
-      filter.$text = { $search: query };
-    }
-    
-    // Count total documents for pagination
-    const totalCount = await VC.countDocuments(filter);
-    const totalPages = Math.ceil(totalCount / limit);
-    
-    // Sort options
-    const sortBy = typeof searchParams?.sortBy === 'string' ? searchParams.sortBy : "rating";
-    let sortOptions = {};
-    
-    switch(sortBy) {
-      case 'rating':
-        // Sort by calculated average rating
-        sortOptions = { 
-          avgResponsiveness: -1, 
-          avgFairness: -1,
-          avgSupport: -1
-        };
-        break;
-      case 'reviews':
-        sortOptions = { totalReviews: -1 };
-        break;
-      case 'name':
-        sortOptions = { name: 1 };
-        break;
-      default:
-        sortOptions = { 
-          avgResponsiveness: -1, 
-          avgFairness: -1,
-          avgSupport: -1
-        };
-    }
-    
-    // Fetch VCs with pagination
-    const vcs = await VC.find(filter)
-      .sort(sortOptions)
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .lean();
-    
-    // Add calculated average rating for each VC and properly cast to VCData
-    const vcsWithAvgRating: VCData[] = vcs.map((vc: any) => {
-      const avgRating = (vc.totalReviews > 0 && typeof vc.avgResponsiveness === 'number' && 
-                         typeof vc.avgFairness === 'number' && typeof vc.avgSupport === 'number')
-        ? Number(((vc.avgResponsiveness + vc.avgFairness + vc.avgSupport) / 3).toFixed(1))
-        : 0;
+    // Navigate to the new URL with search parameters
+    router.push(`/reviews?${params.toString()}`);
+  };
+
+  // Fetch VC firms data
+  useEffect(() => {
+    async function fetchVcs() {
+      setIsLoading(true);
       
-      return {
-        _id: vc._id ? vc._id.toString() : '',
-        name: vc.name || '',
-        slug: vc.slug || '',
-        website: vc.website as string | undefined,
-        avgResponsiveness: typeof vc.avgResponsiveness === 'number' ? vc.avgResponsiveness : 0,
-        avgFairness: typeof vc.avgFairness === 'number' ? vc.avgFairness : 0,
-        avgSupport: typeof vc.avgSupport === 'number' ? vc.avgSupport : 0,
-        totalReviews: typeof vc.totalReviews === 'number' ? vc.totalReviews : 0,
-        avgRating,
-        lastReviewDate: vc.lastReviewDate ? new Date(vc.lastReviewDate).toISOString() : undefined
-      };
-    });
-    
-    return {
-      vcs: vcsWithAvgRating,
-      totalCount,
-      currentPage: page,
-      totalPages
-    };
-    
-  } catch (error) {
-    console.error("Error fetching VCs:", error);
-    return {
-      vcs: [],
-      totalCount: 0,
-      currentPage: page,
-      totalPages: 0
-    };
-  }
-}
-
-// Loading fallback component
-function VCsLoading() {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {[1, 2, 3, 4, 5, 6].map((i) => (
-        <div key={i} className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm animate-pulse">
-          <div className="flex justify-between items-start">
-            <div className="w-2/3">
-              <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mt-2"></div>
-            </div>
-            <div className="flex items-center">
-              <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full mr-2"></div>
-              <div className="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
-            </div>
-          </div>
-          <div className="mt-4 grid grid-cols-3 gap-4">
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
-          </div>
-          <div className="mt-4">
-            <div className="flex justify-between">
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// Main VCs list component
-async function VCsList({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
-  // Await the searchParams Promise before using it
-  const resolvedSearchParams = await searchParams;
-  
-  // Fetch VCs from database
-  const { vcs, currentPage, totalPages } = await getVCs(resolvedSearchParams);
-  
-  // Extract query for pagination
-  const query = typeof resolvedSearchParams?.query === 'string' ? resolvedSearchParams.query : "";
-  
-  // Calculate pagination info
-  const hasNextPage = currentPage < totalPages;
-  const hasPrevPage = currentPage > 1;
-
-  // Check if any filter is applied
-  const hasFilters = Boolean(
-    query || 
-    (resolvedSearchParams?.sortBy && resolvedSearchParams?.sortBy !== 'rating')
-  );
-
-  // Generate additional query string for pagination URLs
-  const additionalQueryParams = new URLSearchParams();
-  
-  // Safely process searchParams for pagination
-  if (resolvedSearchParams) {
-    // Extract specific parameters we know are used in our app
-    const paramKeys = ['query', 'sortBy'];
-    for (const key of paramKeys) {
-      const value = resolvedSearchParams[key];
-      if (key !== 'page' && value !== undefined) {
-        additionalQueryParams.set(key, value.toString());
+      try {
+        // Build query params
+        const params = new URLSearchParams();
+        const query = searchParams.get('query');
+        const sortBy = searchParams.get('sortBy');
+        const page = searchParams.get('page') || '1';
+        
+        if (query) params.set('query', query);
+        if (sortBy) params.set('sortBy', sortBy);
+        params.set('page', page);
+        
+        // Fetch data from API
+        const response = await fetch(`/api/vcs?${params.toString()}`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch VC firms');
+        }
+        
+        const data = await response.json();
+        setVcFirms(data.vcs || []);
+        setTotalPages(data.totalPages || 1);
+        setCurrentPage(parseInt(page));
+      } catch (error) {
+        console.error('Error fetching VC firms:', error);
+        setVcFirms([]);
+      } finally {
+        setIsLoading(false);
       }
     }
-  }
-  
-  const queryString = additionalQueryParams.toString();
-  
-  return (
-    <>
-      {/* VCs grid */}
-      <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-6">
-        {vcs.length > 0 ? (
-          vcs.map((vc: VCData) => (
-            <VCCard
-              key={vc._id}
-              id={vc._id}
-              name={vc.name}
-              slug={vc.slug}
-              website={vc.website}
-              avgResponsiveness={vc.avgResponsiveness}
-              avgFairness={vc.avgFairness}
-              avgSupport={vc.avgSupport}
-              totalReviews={vc.totalReviews}
-              avgRating={vc.avgRating}
-              lastReviewDate={vc.lastReviewDate}
-            />
-          ))
-        ) : (
-          <div className="col-span-3 bg-white dark:bg-gray-800 rounded-lg p-8 shadow-sm text-center">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">No VCs found</h3>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">
-              {hasFilters
-                ? "No VCs match your search criteria."
-                : "Be the first to add a VC firm!"}
-            </p>
-            <div className="mt-6">
-              <Link 
-                href="/reviews/new" 
-                className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-md font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
-              >
-                Write a Review
-              </Link>
-            </div>
-          </div>
-        )}
-      </div>
-      
-      {/* Pagination */}
-      {vcs.length > 0 && totalPages > 1 && (
-        <div className="mt-8 flex justify-center">
-          <div className="inline-flex items-center rounded-md">
-            <Link 
-              href={hasPrevPage ? `/reviews?page=${currentPage - 1}${queryString ? `&${queryString}` : ''}` : '#'} 
-              className={`px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-l-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 ${!hasPrevPage ? 'opacity-50 cursor-not-allowed' : ''}`}
-              aria-disabled={!hasPrevPage}
-            >
-              Previous
-            </Link>
-            
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              // Show current page and surrounding pages
-              let pageToShow: number;
-              if (totalPages <= 5) {
-                pageToShow = i + 1;
-              } else if (currentPage <= 3) {
-                pageToShow = i + 1;
-              } else if (currentPage >= totalPages - 2) {
-                pageToShow = totalPages - 4 + i;
-              } else {
-                pageToShow = currentPage - 2 + i;
-              }
-              
-              return (
-                <Link 
-                  key={pageToShow}
-                  href={`/reviews?page=${pageToShow}${queryString ? `&${queryString}` : ''}`}
-                  className={`px-4 py-2 border-t border-b ${i < 4 ? 'border-r' : ''} border-gray-300 dark:border-gray-600 
-                    ${currentPage === pageToShow ? 'bg-gray-50 dark:bg-gray-700 text-black dark:text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-                >
-                  {pageToShow}
-                </Link>
-              );
-            })}
-            
-            <Link 
-              href={hasNextPage ? `/reviews?page=${currentPage + 1}${queryString ? `&${queryString}` : ''}` : '#'}
-              className={`px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-r-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 ${!hasNextPage ? 'opacity-50 cursor-not-allowed' : ''}`}
-              aria-disabled={!hasNextPage}
-            >
-              Next
-            </Link>
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
+    
+    fetchVcs();
+  }, [searchParams]);
 
-// Main page component
-export default function ReviewsPage({ 
-  searchParams 
-}: { 
-  searchParams?: Promise<{ [key: string]: string | string[] | undefined }> 
-}) {
+  // Calculate if filters are applied
+  const hasFilters = Boolean(
+    searchParams.get('query') || 
+    (searchParams.get('sortBy') && searchParams.get('sortBy') !== 'rating')
+  );
+
+  // Generate pagination query string
+  const getPaginationQueryString = () => {
+    const params = new URLSearchParams();
+    if (searchParams.get('query')) params.set('query', searchParams.get('query')!);
+    if (searchParams.get('sortBy')) params.set('sortBy', searchParams.get('sortBy')!);
+    return params.toString() ? `&${params.toString()}` : '';
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
@@ -298,12 +108,14 @@ export default function ReviewsPage({
       </div>
       
       {/* Filter options */}
-      <div className="mb-6 flex flex-col md:flex-row justify-between gap-4">
-        <div className="w-full md:w-1/3">
+      <form onSubmit={handleSearch} className="mb-6 flex flex-col md:flex-row justify-between gap-4">
+        <div className="w-full md:w-1/2">
           <div className="relative">
             <input
               type="text"
               name="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search VC firms..."
               className="w-full py-2 px-4 pr-10 border rounded-md dark:bg-gray-800 dark:border-gray-700 focus:ring-2 focus:ring-black dark:focus:ring-white focus:outline-none"
             />
@@ -315,11 +127,12 @@ export default function ReviewsPage({
           </div>
         </div>
         
-        <div className="flex gap-4">
+        <div className="flex gap-4 items-center">
           <div className="w-full md:w-auto">
             <select
               name="sortBy"
-              defaultValue="rating"
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value)}
               className="w-full py-2 px-4 border rounded-md dark:bg-gray-800 dark:border-gray-700 focus:ring-2 focus:ring-black dark:focus:ring-white focus:outline-none"
             >
               <option value="rating">Highest Rated</option>
@@ -327,13 +140,112 @@ export default function ReviewsPage({
               <option value="name">Alphabetical</option>
             </select>
           </div>
+          <button 
+            type="submit"
+            className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-md font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
+          >
+            Search
+          </button>
         </div>
-      </div>
+      </form>
       
-      {/* VCs list with suspense */}
-      <Suspense fallback={<VCsLoading />}>
-        <VCsList searchParams={searchParams || Promise.resolve({})} />
-      </Suspense>
+      {/* Display VC firms */}
+      {isLoading ? (
+        <div className="mt-12 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-lg text-gray-600 dark:text-gray-400">
+            Loading VC firms data...
+          </p>
+        </div>
+      ) : (
+        <>
+          {/* VCs grid */}
+          <div className="grid grid-cols-1 gap-6">
+            {vcFirms.length > 0 ? (
+              vcFirms.map((vc) => (
+                <VCCard
+                  key={vc._id}
+                  id={vc._id}
+                  name={vc.name}
+                  slug={vc.slug}
+                  website={vc.website}
+                  avgResponsiveness={vc.avgResponsiveness}
+                  avgFairness={vc.avgFairness}
+                  avgSupport={vc.avgSupport}
+                  totalReviews={vc.totalReviews}
+                  avgRating={vc.avgRating}
+                  lastReviewDate={vc.lastReviewDate}
+                />
+              ))
+            ) : (
+              <div className="col-span-3 bg-white dark:bg-gray-800 rounded-lg p-8 shadow-sm text-center">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">No VCs found</h3>
+                <p className="mt-2 text-gray-600 dark:text-gray-400">
+                  {hasFilters
+                    ? "No VCs match your search criteria."
+                    : "Be the first to add a VC firm!"}
+                </p>
+                <div className="mt-6">
+                  <Link 
+                    href="/reviews/new" 
+                    className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-md font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
+                  >
+                    Write a Review
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* Pagination */}
+          {vcFirms.length > 0 && totalPages > 1 && (
+            <div className="mt-8 flex justify-center">
+              <div className="inline-flex items-center rounded-md">
+                <Link 
+                  href={currentPage > 1 ? `/reviews?page=${currentPage - 1}${getPaginationQueryString()}` : '#'} 
+                  className={`px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-l-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 ${currentPage <= 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  aria-disabled={currentPage <= 1}
+                >
+                  Previous
+                </Link>
+                
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  // Show current page and surrounding pages
+                  let pageToShow: number;
+                  if (totalPages <= 5) {
+                    pageToShow = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageToShow = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageToShow = totalPages - 4 + i;
+                  } else {
+                    pageToShow = currentPage - 2 + i;
+                  }
+                  
+                  return (
+                    <Link 
+                      key={pageToShow}
+                      href={`/reviews?page=${pageToShow}${getPaginationQueryString()}`}
+                      className={`px-4 py-2 border-t border-b ${i < 4 ? 'border-r' : ''} border-gray-300 dark:border-gray-600 
+                        ${currentPage === pageToShow ? 'bg-gray-50 dark:bg-gray-700 text-black dark:text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                    >
+                      {pageToShow}
+                    </Link>
+                  );
+                })}
+                
+                <Link 
+                  href={currentPage < totalPages ? `/reviews?page=${currentPage + 1}${getPaginationQueryString()}` : '#'}
+                  className={`px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-r-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 ${currentPage >= totalPages ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  aria-disabled={currentPage >= totalPages}
+                >
+                  Next
+                </Link>
+              </div>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
