@@ -2,8 +2,8 @@ import mongoose from 'mongoose';
 
 // Define connection interface for caching
 interface Cached {
-  conn: mongoose.Mongoose | null;
-  promise: Promise<mongoose.Mongoose> | null;
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
 }
 
 // Define global type that works with modern TypeScript
@@ -23,7 +23,7 @@ if (process.env.NODE_ENV !== 'production') {
   global.mongooseCache = cached;
 }
 
-export async function connectToDatabase(): Promise<mongoose.Mongoose> {
+export async function connectToDatabase(): Promise<typeof mongoose> {
   // If connection exists, return it
   if (cached.conn) {
     return cached.conn;

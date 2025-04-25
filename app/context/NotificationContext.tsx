@@ -59,9 +59,14 @@ const NotificationContext = createContext<NotificationContextProps | undefined>(
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const [alerts, setAlerts] = useState<Alert[]>([]);
+  // Add a counter for stable ID generation
+  const [idCounter, setIdCounter] = useState(0);
 
   const showAlert = (message: string, type: AlertType = 'default', options: AlertOptions = {}) => {
-    const id = options.id || Math.random().toString(36).substring(2, 9);
+    // Use the provided ID or generate one using the counter
+    const id = options.id || `alert-${idCounter}`;
+    // Increment the counter for next alert
+    setIdCounter(prev => prev + 1);
     
     // Set default values based on alert type
     const autoClose = options.autoClose ?? true; // Default all alerts to auto-close

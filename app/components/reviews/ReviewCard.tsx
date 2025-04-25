@@ -32,10 +32,10 @@ export default function ReviewCard({
   rating,
   anonymous = false
 }: ReviewCardProps) {
-  // Format date
+  // Format date with a consistent locale to avoid hydration mismatches
   const formattedDate = date instanceof Date 
-    ? date.toLocaleDateString() 
-    : new Date(date).toLocaleDateString();
+    ? date.toLocaleDateString('en-US', {timeZone: 'UTC'}) 
+    : new Date(date).toLocaleDateString('en-US', {timeZone: 'UTC'});
 
   // Calculate average rating if rating is an object
   const averageRating = typeof rating === 'number'

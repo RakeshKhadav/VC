@@ -16,6 +16,17 @@ interface Review {
   date: string;
 }
 
+// Helper function for consistent date formatting between server and client
+const formatDate = (dateInput: string | Date) => {
+  const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'UTC' // Use UTC to prevent timezone issues
+  });
+};
+
 // Component to handle the search params logic
 function ProfileContent() {
   const { isLoaded, isSignedIn, user } = useUser();
@@ -96,7 +107,7 @@ function ProfileContent() {
           <div>
             <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Member Since</label>
             <p className="text-gray-900 dark:text-gray-100">
-              {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+              {user.createdAt ? formatDate(user.createdAt) : 'N/A'}
             </p>
           </div>
         </div>
@@ -132,7 +143,7 @@ function ProfileContent() {
                         </svg>
                       ))}
                       <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
-                        {new Date(review.date).toLocaleDateString()}
+                        {formatDate(review.date)}
                       </span>
                     </div>
                   </div>
@@ -183,7 +194,7 @@ function ProfileContent() {
                       </svg>
                     ))}
                     <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(review.date).toLocaleDateString()}
+                      {formatDate(review.date)}
                     </span>
                   </div>
                 </div>

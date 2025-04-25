@@ -12,6 +12,19 @@ interface Review {
   date: string;
 }
 
+// Add a utility function to format dates consistently
+const formatDate = (dateString: string) => {
+  // Use a stable date formatting approach for SSR/CSR compatibility
+  const date = new Date(dateString);
+  // Format as YYYY-MM-DD to ensure consistent rendering
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'UTC' // Use UTC to prevent timezone issues
+  });
+};
+
 export default async function UserReviewsPage() {
   const user = await currentUser();
   
@@ -116,7 +129,7 @@ export default async function UserReviewsPage() {
                           </svg>
                         ))}
                         <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
-                          {new Date(review.date).toLocaleDateString()}
+                          {formatDate(review.date)}
                         </span>
                       </div>
                     </div>

@@ -1,110 +1,129 @@
 import Link from "next/link";
-import StarRating from "@/app/components/ui/StarRating";
-import ReviewFilters from "@/app/components/ui/ReviewFilters";
 import { Suspense } from "react";
+import ReviewFilters from "@/app/components/ui/ReviewFilters";
+import VCCard from "@/app/components/reviews/VCCard";
+import { connectToDatabase } from "@/lib/db/mongodb";
+import VC from "@/lib/db/models/VC";
 
-// Define review data type for strong typing
-export interface Review {
-  id: string;
-  vcName: string;
-  vcSlug: string;
-  companyName?: string;
-  sector?: string;
-  ratings: {
-    responsiveness: number;
-    fairness: number;
-    support: number;
-  };
-  content: string;
-  stage?: string;
-  amount?: string;
-  year?: string;
-  anonymous: boolean;
-  authorRole?: string;
-  createdAt: string;
+// Define VC data type for strong typing
+export interface VCData {
+  _id: string;
+  name: string;
+  slug: string;
+  website?: string;
+  avgResponsiveness: number;
+  avgFairness: number;
+  avgSupport: number;
+  totalReviews: number;
+  avgRating: number;
+  lastReviewDate?: string;
 }
 
-// Calculate average ratings for a review
-const calculateAverageRating = (ratings: { responsiveness: number, fairness: number, support: number }) => {
-  const sum = ratings.responsiveness + ratings.fairness + ratings.support;
-  return (sum / 3).toFixed(1);
-};
-
-// This function would fetch reviews from your database
-async function getReviews(searchParams: { [key: string]: string | string[] | undefined }) {
+// This function fetches all VCs from the database
+async function getVCs(searchParams: { [key: string]: string | string[] | undefined }) {
   // Extract filter parameters
   const query = typeof searchParams?.query === 'string' ? searchParams.query : "";
   const pageParam = typeof searchParams?.page === 'string' ? searchParams.page : "1";
-  const page = parseInt(pageParam);
+  const page = parseInt(pageParam) || 1;
+  const limit = 9; // Show 9 VCs per page
   
-  // Get additional filters
-  const sector = typeof searchParams?.sector === 'string' ? searchParams.sector : "";
-  const stage = typeof searchParams?.stage === 'string' ? searchParams.stage : "";
-  const minRating = typeof searchParams?.minRating === 'string' ? searchParams.minRating : "";
-  const year = typeof searchParams?.year === 'string' ? searchParams.year : "";
-  const sortBy = typeof searchParams?.sortBy === 'string' ? searchParams.sortBy : "newest";
-  
-  // Demonstrate how these variables would be used in an actual implementation
-  console.log({query, sector, stage, minRating, year, sortBy});
-  
-  // TODO: Replace with actual database call
-  // Example implementation with a database:
-  // const whereClause = {};
-  //
-  // if (query) {
-  //   whereClause.OR = [
-  //     { vcName: { contains: query, mode: 'insensitive' } },
-  //     { sector: { contains: query, mode: 'insensitive' } },
-  //     { content: { contains: query, mode: 'insensitive' } }
-  //   ];
-  // }
-  //
-  // if (sector) whereClause.sector = sector;
-  // if (stage) whereClause.stage = stage;
-  // if (minRating) whereClause.averageRating = { gte: parseFloat(minRating) };
-  // if (year) whereClause.year = parseInt(year);
-  //
-  // const sortOrder = {};
-  // switch (sortBy) {
-  //   case 'newest':
-  //     sortOrder.createdAt = 'desc';
-  //     break;
-  //   case 'oldest':
-  //     sortOrder.createdAt = 'asc';
-  //     break;
-  //   case 'highest':
-  //     sortOrder.averageRating = 'desc';
-  //     break;
-  //   case 'lowest':
-  //     sortOrder.averageRating = 'asc';
-  //     break;
-  //   default:
-  //     sortOrder.createdAt = 'desc';
-  // }
-  //  
-  // return await db.reviews.findMany({
-  //   where: whereClause,
-  //   skip: (page - 1) * limit,
-  //   take: limit,
-  //   orderBy: sortOrder
-  // });
-  
-  return {
-    reviews: [],
-    totalCount: 0,
-    currentPage: page,
-    totalPages: 0
-  };
+  try {
+    // Connect to MongoDB
+    await connectToDatabase();
+    
+    // Build filter object based on search params
+    const filter: any = {};
+    
+    // Text search if query is provided
+    if (query) {
+      filter.$text = { $search: query };
+    }
+    
+    // Count total documents for pagination
+    const totalCount = await VC.countDocuments(filter);
+    const totalPages = Math.ceil(totalCount / limit);
+    
+    // Sort options
+    const sortBy = typeof searchParams?.sortBy === 'string' ? searchParams.sortBy : "rating";
+    let sortOptions = {};
+    
+    switch(sortBy) {
+      case 'rating':
+        // Sort by calculated average rating
+        sortOptions = { 
+          avgResponsiveness: -1, 
+          avgFairness: -1,
+          avgSupport: -1
+        };
+        break;
+      case 'reviews':
+        sortOptions = { totalReviews: -1 };
+        break;
+      case 'name':
+        sortOptions = { name: 1 };
+        break;
+      default:
+        sortOptions = { 
+          avgResponsiveness: -1, 
+          avgFairness: -1,
+          avgSupport: -1
+        };
+    }
+    
+    // Fetch VCs with pagination
+    const vcs = await VC.find(filter)
+      .sort(sortOptions)
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean();
+    
+    // Add calculated average rating for each VC and properly cast to VCData
+    const vcsWithAvgRating: VCData[] = vcs.map((vc: any) => {
+      const avgRating = (vc.totalReviews > 0 && typeof vc.avgResponsiveness === 'number' && 
+                         typeof vc.avgFairness === 'number' && typeof vc.avgSupport === 'number')
+        ? Number(((vc.avgResponsiveness + vc.avgFairness + vc.avgSupport) / 3).toFixed(1))
+        : 0;
+      
+      return {
+        _id: vc._id ? vc._id.toString() : '',
+        name: vc.name || '',
+        slug: vc.slug || '',
+        website: vc.website as string | undefined,
+        avgResponsiveness: typeof vc.avgResponsiveness === 'number' ? vc.avgResponsiveness : 0,
+        avgFairness: typeof vc.avgFairness === 'number' ? vc.avgFairness : 0,
+        avgSupport: typeof vc.avgSupport === 'number' ? vc.avgSupport : 0,
+        totalReviews: typeof vc.totalReviews === 'number' ? vc.totalReviews : 0,
+        avgRating,
+        lastReviewDate: vc.lastReviewDate ? new Date(vc.lastReviewDate).toISOString() : undefined
+      };
+    });
+    
+    return {
+      vcs: vcsWithAvgRating,
+      totalCount,
+      currentPage: page,
+      totalPages
+    };
+    
+  } catch (error) {
+    console.error("Error fetching VCs:", error);
+    return {
+      vcs: [],
+      totalCount: 0,
+      currentPage: page,
+      totalPages: 0
+    };
+  }
 }
 
 // Loading fallback component
-function ReviewsLoading() {
+function VCsLoading() {
   return (
-    <div className="space-y-6">
-      {[1, 2, 3].map((i) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {[1, 2, 3, 4, 5, 6].map((i) => (
         <div key={i} className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm animate-pulse">
           <div className="flex justify-between items-start">
-            <div className="w-1/3">
+            <div className="w-2/3">
               <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
               <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mt-2"></div>
             </div>
@@ -119,9 +138,10 @@ function ReviewsLoading() {
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
           </div>
           <div className="mt-4">
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mt-2"></div>
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mt-2"></div>
+            <div className="flex justify-between">
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+            </div>
           </div>
         </div>
       ))}
@@ -129,13 +149,13 @@ function ReviewsLoading() {
   );
 }
 
-// Main review list component
-async function ReviewsList({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+// Main VCs list component
+async function VCsList({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   // Await the searchParams Promise before using it
   const resolvedSearchParams = await searchParams;
   
-  // Fetch reviews from database
-  const { reviews, currentPage, totalPages } = await getReviews(resolvedSearchParams);
+  // Fetch VCs from database
+  const { vcs, currentPage, totalPages } = await getVCs(resolvedSearchParams);
   
   // Extract query for pagination
   const query = typeof resolvedSearchParams?.query === 'string' ? resolvedSearchParams.query : "";
@@ -147,11 +167,7 @@ async function ReviewsList({ searchParams }: { searchParams: Promise<{ [key: str
   // Check if any filter is applied
   const hasFilters = Boolean(
     query || 
-    resolvedSearchParams?.sector || 
-    resolvedSearchParams?.stage || 
-    resolvedSearchParams?.minRating || 
-    resolvedSearchParams?.year || 
-    (resolvedSearchParams?.sortBy && resolvedSearchParams?.sortBy !== 'newest')
+    (resolvedSearchParams?.sortBy && resolvedSearchParams?.sortBy !== 'rating')
   );
 
   // Generate additional query string for pagination URLs
@@ -160,7 +176,7 @@ async function ReviewsList({ searchParams }: { searchParams: Promise<{ [key: str
   // Safely process searchParams for pagination
   if (resolvedSearchParams) {
     // Extract specific parameters we know are used in our app
-    const paramKeys = ['query', 'sector', 'stage', 'minRating', 'year', 'sortBy'];
+    const paramKeys = ['query', 'sortBy'];
     for (const key of paramKeys) {
       const value = resolvedSearchParams[key];
       if (key !== 'page' && value !== undefined) {
@@ -173,75 +189,31 @@ async function ReviewsList({ searchParams }: { searchParams: Promise<{ [key: str
   
   return (
     <>
-      {/* Reviews list */}
-      <div className="space-y-6">
-        {reviews.length > 0 ? (
-          reviews.map((review: Review) => (
-            <div key={review.id} className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-              <div className="flex justify-between items-start">
-                <div>
-                  <Link href={`/vc/${review.vcSlug}`} className="text-xl font-medium hover:underline">
-                    {review.vcName}
-                  </Link>
-                  <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    Reviewed {new Date(review.createdAt).toLocaleDateString()} 
-                    {!review.anonymous && review.companyName && ` by ${review.companyName}`}
-                  </div>
-                </div>
-                
-                <div className="flex items-center">
-                  <span className="text-2xl font-bold mr-2">
-                    {calculateAverageRating(review.ratings)}
-                  </span>
-                  <StarRating 
-                    value={parseFloat(calculateAverageRating(review.ratings))} 
-                    edit={false}
-                    size={18}
-                  />
-                </div>
-              </div>
-              
-              <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
-                <div>
-                  <span className="text-gray-500 dark:text-gray-400">Responsiveness:</span>
-                  <div className="flex items-center mt-1">
-                    <StarRating value={review.ratings.responsiveness} edit={false} size={14} />
-                  </div>
-                </div>
-                <div>
-                  <span className="text-gray-500 dark:text-gray-400">Fairness:</span>
-                  <div className="flex items-center mt-1">
-                    <StarRating value={review.ratings.fairness} edit={false} size={14} />
-                  </div>
-                </div>
-                <div>
-                  <span className="text-gray-500 dark:text-gray-400">Support:</span>
-                  <div className="flex items-center mt-1">
-                    <StarRating value={review.ratings.support} edit={false} size={14} />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mt-4">
-                <p className="text-gray-700 dark:text-gray-300 line-clamp-3">
-                  {review.content}
-                </p>
-              </div>
-              
-              <div className="mt-4 flex justify-end">
-                <Link href={`/vc/${review.vcSlug}`} className="text-sm text-black dark:text-white hover:underline">
-                  Read more reviews for {review.vcName} →
-                </Link>
-              </div>
-            </div>
+      {/* VCs grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {vcs.length > 0 ? (
+          vcs.map((vc: VCData) => (
+            <VCCard
+              key={vc._id}
+              id={vc._id}
+              name={vc.name}
+              slug={vc.slug}
+              website={vc.website}
+              avgResponsiveness={vc.avgResponsiveness}
+              avgFairness={vc.avgFairness}
+              avgSupport={vc.avgSupport}
+              totalReviews={vc.totalReviews}
+              avgRating={vc.avgRating}
+              lastReviewDate={vc.lastReviewDate}
+            />
           ))
         ) : (
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-8 shadow-sm text-center">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">No reviews found</h3>
+          <div className="col-span-3 bg-white dark:bg-gray-800 rounded-lg p-8 shadow-sm text-center">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">No VCs found</h3>
             <p className="mt-2 text-gray-600 dark:text-gray-400">
               {hasFilters
-                ? "No reviews match your search criteria."
-                : "Be the first to write a review!"}
+                ? "No VCs match your search criteria."
+                : "Be the first to add a VC firm!"}
             </p>
             <div className="mt-6">
               <Link 
@@ -256,7 +228,7 @@ async function ReviewsList({ searchParams }: { searchParams: Promise<{ [key: str
       </div>
       
       {/* Pagination */}
-      {reviews.length > 0 && totalPages > 0 && (
+      {vcs.length > 0 && totalPages > 1 && (
         <div className="mt-8 flex justify-center">
           <div className="inline-flex items-center rounded-md">
             <Link 
@@ -315,7 +287,7 @@ export default function ReviewsPage({
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">VC Reviews</h1>
+        <h1 className="text-3xl font-bold">Explore VC Firms</h1>
         
         <Link 
           href="/reviews/new" 
@@ -325,16 +297,42 @@ export default function ReviewsPage({
         </Link>
       </div>
       
-      {/* Search and filters with Suspense boundary */}
-      <Suspense fallback={<div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm animate-pulse h-20"></div>}>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-          <ReviewFilters />
+      {/* Filter options */}
+      <div className="mb-6 flex flex-col md:flex-row justify-between gap-4">
+        <div className="w-full md:w-1/3">
+          <div className="relative">
+            <input
+              type="text"
+              name="search"
+              placeholder="Search VC firms..."
+              className="w-full py-2 px-4 pr-10 border rounded-md dark:bg-gray-800 dark:border-gray-700 focus:ring-2 focus:ring-black dark:focus:ring-white focus:outline-none"
+            />
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
         </div>
-      </Suspense>
+        
+        <div className="flex gap-4">
+          <div className="w-full md:w-auto">
+            <select
+              name="sortBy"
+              defaultValue="rating"
+              className="w-full py-2 px-4 border rounded-md dark:bg-gray-800 dark:border-gray-700 focus:ring-2 focus:ring-black dark:focus:ring-white focus:outline-none"
+            >
+              <option value="rating">Highest Rated</option>
+              <option value="reviews">Most Reviews</option>
+              <option value="name">Alphabetical</option>
+            </select>
+          </div>
+        </div>
+      </div>
       
-      {/* Reviews list with suspense */}
-      <Suspense fallback={<ReviewsLoading />}>
-        <ReviewsList searchParams={searchParams || Promise.resolve({})} />
+      {/* VCs list with suspense */}
+      <Suspense fallback={<VCsLoading />}>
+        <VCsList searchParams={searchParams || Promise.resolve({})} />
       </Suspense>
     </div>
   );

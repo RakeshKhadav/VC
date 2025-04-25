@@ -3,7 +3,7 @@
 import { useUser } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useMemo } from "react";
 import StarRating from "@/app/components/ui/StarRating";
 import { useNotification } from "@/app/context/NotificationContext";
 import SessionCheck from "@/app/components/auth/SessionCheck";
@@ -16,6 +16,12 @@ function ReviewFormContent() {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showAlert } = useNotification();
+  
+  // Generate years list with useMemo to prevent hydration mismatch
+  const yearsList = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    return Array.from({ length: 10 }, (_, i) => currentYear - i);
+  }, []);
   
   // Form state management
   const [selectedVC, setSelectedVC] = useState("");
@@ -540,21 +546,17 @@ function ReviewFormContent() {
               Year of Investment/Interaction
             </label>
             <select
-              id="year"
-              name="year"
-              className="w-full md:w-1/3 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
-              value={reviewDetails.year}
-              onChange={handleReviewDetailsChange}
+              name="yearOfInteraction"
+              id="yearOfInteraction"
+              required
+              className="w-full p-2 border rounded"
             >
-              <option value="">Select year</option>
-              {[...Array(10)].map((_, i) => {
-                const year = new Date().getFullYear() - i;
-                return (
-                  <option key={year} value={year.toString()}>
-                    {year}
-                  </option>
-                );
-              })}
+              <option value="">Select a year</option>
+              {yearsList.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
             </select>
           </div>
           

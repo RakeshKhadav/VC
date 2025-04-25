@@ -1,6 +1,16 @@
+"use client";
+
 import Link from "next/link";
+import { useMemo } from "react";
 
 export default function Footer() {
+  // Fix hydration mismatch by ensuring date calculation is consistent
+  // and component is fully client-side rendered
+  const currentYear = useMemo(() => 
+    // Force UTC timezone to prevent timezone differences between server and client
+    new Date().toLocaleString('en-US', {timeZone: 'UTC', year: 'numeric'})
+  , []);
+  
   return (
     <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 py-12 px-4 mt-auto">
       <div className="max-w-6xl mx-auto">
@@ -61,7 +71,7 @@ export default function Footer() {
 
         <div className="border-t border-gray-200 dark:border-gray-800 mt-8 pt-8">
           <p className="text-gray-500 dark:text-gray-400 text-sm text-center">
-            © {new Date().getFullYear()} Backchannel. All rights reserved.
+            © {currentYear} Backchannel. All rights reserved.
           </p>
         </div>
       </div>

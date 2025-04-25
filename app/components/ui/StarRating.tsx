@@ -1,7 +1,19 @@
 "use client";
 
 import React, { useState } from 'react';
-import ReactStars from 'react-stars';
+import dynamic from 'next/dynamic';
+
+// Import ReactStars with dynamic import to avoid hydration mismatch
+const ReactStars = dynamic(() => import('react-stars'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex">
+      {Array(5).fill(0).map((_, i) => (
+        <div key={i} className="w-6 h-6 text-gray-300">★</div>
+      ))}
+    </div>
+  )
+});
 
 interface StarRatingProps {
   count?: number;
