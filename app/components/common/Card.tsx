@@ -9,6 +9,7 @@ interface CardProps {
   className?: string;
   children: ReactNode;
   padding?: 'none' | 'sm' | 'md' | 'lg';
+  borderless?: boolean;
 }
 
 export default function Card({
@@ -17,6 +18,7 @@ export default function Card({
   footer,
   className = '',
   padding = 'md',
+  borderless = false,
   children
 }: CardProps) {
   // Padding styles
@@ -30,7 +32,7 @@ export default function Card({
   return (
     <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm ${className}`}>
       {(title || subtitle) && (
-        <div className={`border-b border-gray-200 dark:border-gray-700 ${paddingStyles[padding]}`}>
+        <div className={`${!borderless ? 'border-b border-gray-200 dark:border-gray-700' : ''} ${paddingStyles[padding]}`}>
           {title && (
             typeof title === 'string' 
               ? <h3 className="text-xl font-medium">{title}</h3>
@@ -49,7 +51,7 @@ export default function Card({
       </div>
       
       {footer && (
-        <div className={`border-t border-gray-200 dark:border-gray-700 ${paddingStyles[padding]}`}>
+        <div className={`${!borderless ? 'border-t border-gray-200 dark:border-gray-700' : ''} ${paddingStyles[padding]}`}>
           {footer}
         </div>
       )}

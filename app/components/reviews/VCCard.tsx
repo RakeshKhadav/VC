@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import StarRating from "@/app/components/ui/StarRating";
 import { useRouter } from "next/navigation";
+import Card from "@/app/components/common/Card";
 
 export interface VCCardProps {
   id: string;
@@ -20,13 +20,8 @@ export interface VCCardProps {
 export default function VCCard({ 
   name, 
   slug, 
-  website,
-  avgResponsiveness,
-  avgFairness,
-  avgSupport,
   totalReviews,
-  avgRating,
-  lastReviewDate
+  avgRating
 }: VCCardProps) {
   const router = useRouter();
 
@@ -34,69 +29,61 @@ export default function VCCard({
     router.push(`/vc/${slug}`);
   };
 
+  // Create card title with name and rating
+  const cardTitle = (
+    <div className="flex justify-between items-center w-full">
+      <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{name}</h3>
+      <div className="flex items-center">
+        <StarRating 
+          value={avgRating || 0} 
+          edit={false}
+          size={24}
+        />
+        {/* <span className="ml-2 font-semibold text-gray-800 dark:text-gray-200">
+          {avgRating?.toFixed(1) || "N/A"}
+        </span> */}
+      </div>
+    </div>
+  );
+
+  // Create card footer with explore button and reviews count
+  const cardFooter = (
+    <div className="flex justify-between items-center">
+      <div className="text-sm text-gray-500 dark:text-gray-400">
+        {totalReviews} {totalReviews === 1 ? 'review' : 'reviews'}
+      </div>
+      <button 
+        className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center transition-colors"
+        onClick={(e) => {
+          e.stopPropagation();
+          router.push(`/vc/${slug}`);
+        }}
+      >
+        Explore VC
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+        </svg>
+      </button>
+    </div>
+  );
+
   return (
     <div 
       onClick={handleCardClick}
-      className="block transition-all hover:shadow-md cursor-pointer"
+      className="w-full transition-all hover:shadow-lg cursor-pointer"
     >
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm h-full">
-        <div className="flex justify-between items-start">
-          <div>
-            <h3 className="text-xl font-medium">{name}</h3>
-            {website && (
-              <a 
-                href={website.startsWith('http') ? website : `https://${website}`} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-sm text-gray-500 dark:text-gray-400 hover:underline mt-1 block"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
-              </a>
-            )}
-          </div>
-          
-          <div className="flex items-center">
-            <span className="text-2xl font-bold mr-2">{avgRating?.toFixed(1) || "N/A"}</span>
-            <StarRating 
-              value={avgRating || 0} 
-              edit={false}
-              size={18}
-            />
-          </div>
+      <Card
+        title={cardTitle}
+        footer={cardFooter}
+        padding="md"
+        borderless={true}
+        className="border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
+      >
+        <div className="text-sm text-gray-600 dark:text-gray-400">
+          {/* Placeholder for VC description - will be populated from database */}
+          <p className="line-clamp-2">VC firm specializing in early-stage investments across various sectors.</p>
         </div>
-        
-        <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
-          <div>
-            <span className="text-gray-500 dark:text-gray-400">Responsiveness:</span>
-            <div className="flex items-center mt-1">
-              <StarRating value={avgResponsiveness || 0} edit={false} size={14} />
-            </div>
-          </div>
-          <div>
-            <span className="text-gray-500 dark:text-gray-400">Fairness:</span>
-            <div className="flex items-center mt-1">
-              <StarRating value={avgFairness || 0} edit={false} size={14} />
-            </div>
-          </div>
-          <div>
-            <span className="text-gray-500 dark:text-gray-400">Support:</span>
-            <div className="flex items-center mt-1">
-              <StarRating value={avgSupport || 0} edit={false} size={14} />
-            </div>
-          </div>
-        </div>
-        
-        <div className="mt-4 flex justify-between items-center">
-          <span className="text-sm text-gray-500 dark:text-gray-400">
-            {totalReviews} {totalReviews === 1 ? 'review' : 'reviews'}
-          </span>
-          
-          <span className="text-sm text-black dark:text-white font-medium">
-            View details →
-          </span>
-        </div>
-      </div>
+      </Card>
     </div>
   );
 }

@@ -190,7 +190,7 @@ async function VCsList({ searchParams }: { searchParams: Promise<{ [key: string]
   return (
     <>
       {/* VCs grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-6">
         {vcs.length > 0 ? (
           vcs.map((vc: VCData) => (
             <VCCard

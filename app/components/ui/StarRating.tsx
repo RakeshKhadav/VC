@@ -46,7 +46,7 @@ export default function StarRating({
   };
 
   return (
-    <div className="star-rating">
+    <div className="star-rating flex items-center">
       <ReactStars
         count={count}
         value={rating}
@@ -58,7 +58,7 @@ export default function StarRating({
         edit={edit}
       />
       {!edit && rating > 0 && (
-        <span className="text-sm text-gray-500 ml-2 inline-block align-middle">
+        <span className="text-sm text-gray-500 ml-2 inline-block align-center">
           {rating.toFixed(1)}
         </span>
       )}
