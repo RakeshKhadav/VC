@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState, Suspense } from "react";
+import ViewLimits from "@/app/components/user/ViewLimits";
 
 // Define a type for review objects
 interface Review {
@@ -293,6 +294,11 @@ function ProfileContent() {
                 Write New Review
               </Link>
             </nav>
+          </div>
+          
+          {/* View Limits Card */}
+          <div className="border-t border-gray-200 dark:border-gray-700 mt-4 pt-4">
+            <ViewLimits />
           </div>
         </div>
         

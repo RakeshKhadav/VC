@@ -10,6 +10,9 @@ export interface ReviewView {
 export interface UserDocument extends Document {
   clerkId: string;
   email: string;
+  firstName?: string;
+  lastName?: string;
+  imageUrl?: string;
   plan: 'free' | 'premium';
   reviewViews: ReviewView[];
   createdAt: Date;
@@ -33,6 +36,15 @@ const UserSchema = new Schema<UserDocument>(
       type: String, 
       required: true, 
       unique: true 
+    },
+    firstName: {
+      type: String
+    },
+    lastName: {
+      type: String
+    },
+    imageUrl: {
+      type: String
     },
     plan: { 
       type: String, 

@@ -1,21 +1,27 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db/mongodb';
+import mongoose from 'mongoose';
 
 export async function GET() {
   try {
-    // Test database connection
-    const mongoose = await connectToDatabase();
+    console.log('Testing database connection...');
     
-    return NextResponse.json({ 
-      status: "Database connection successful", 
-      connected: mongoose.connection.readyState === 1,
-      connectionState: mongoose.connection.readyState
+    const connection = await connectToDatabase();
+    
+    return NextResponse.json({
+      success: true,
+      connected: connection.connection.readyState === 1,
+      dbName: connection.connection.name,
+      models: Object.keys(mongoose.models)
     });
   } catch (error) {
-    console.error("Database connection error:", error);
-    return NextResponse.json({ 
-      status: "Database connection failed", 
-      error: error instanceof Error ? error.message : "Unknown error" 
-    }, { status: 500 });
+    console.error('Database connection test failed:', error);
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: error instanceof Error ? error.message : String(error)
+      }, 
+      { status: 500 }
+    );
   }
 }

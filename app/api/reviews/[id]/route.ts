@@ -4,6 +4,7 @@ import { connectToDatabase } from '@/lib/db/mongodb';
 import Review from '@/lib/db/models/Review';
 import User from '@/lib/db/models/User';
 import mongoose from 'mongoose';
+import { getClerkUserDetails } from '@/lib/utils/clerkUtils';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -46,14 +47,16 @@ export async function GET(
     let user = await User.findOne({ clerkId: userId });
     
     if (!user) {
-      // If this is a user's first time accessing a review, get their info from Clerk
-      // and create a record in our database
+      // Get comprehensive user information from Clerk
+      const userDetails = await getClerkUserDetails(userId);
       
-      // In production, you'd use Clerk's API to get user email, but
-      // for simplicity we'll set a placeholder
+      // Create a new user record with complete information
       user = new User({
         clerkId: userId,
-        email: "placeholder@example.com", // In production, get from Clerk API
+        email: userDetails.email,
+        firstName: userDetails.firstName,
+        lastName: userDetails.lastName,
+        imageUrl: userDetails.imageUrl,
         plan: "free",
         reviewViews: []
       });

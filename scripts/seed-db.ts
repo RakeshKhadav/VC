@@ -1,6 +1,7 @@
 import { connectToDatabase } from '../lib/db/mongodb';
 import VC from '../lib/db/models/VC';
 import Review from '../lib/db/models/Review';
+import User from '../lib/db/models/User';
 import mongoose from 'mongoose';
 
 // Sample VC firms data
@@ -186,8 +187,25 @@ async function seedDatabase() {
     // Clear existing data
     await VC.deleteMany({});
     await Review.deleteMany({});
+    await User.deleteMany({}); // Clear any existing users
     
     console.log('Existing data cleared');
+    
+    // Create a test user
+    const testUser = new User({
+      clerkId: `test_user_${Date.now()}`,
+      email: `testuser${Date.now()}@example.com`,
+      plan: 'free',
+      reviewViews: []
+    });
+    
+    await testUser.save();
+    console.log('Created test user with ID:', testUser._id);
+    
+    // Add a sample review view to the user
+    const randomReviewId = new mongoose.Types.ObjectId();
+    await testUser.recordReviewView(randomReviewId);
+    console.log('Added test review view to user');
     
     // Insert VCs
     const insertedVCs = await VC.insertMany(vcData);
@@ -201,6 +219,25 @@ async function seedDatabase() {
     // Update VCs with review statistics
     await updateVCStats(reviewsToInsert);
     console.log('Updated VC statistics');
+    
+    // Create a premium user as well
+    const premiumUser = new User({
+      clerkId: `premium_user_${Date.now()}`,
+      email: `premiumuser${Date.now()}@example.com`,
+      plan: 'premium',
+      reviewViews: []
+    });
+    
+    await premiumUser.save();
+    console.log('Created premium test user with ID:', premiumUser._id);
+    
+    // Add several review views to premium user
+    for (let i = 0; i < 3; i++) {
+      if (insertedReviews[i]) {
+        await premiumUser.recordReviewView(insertedReviews[i]._id);
+      }
+    }
+    console.log('Added review views to premium user');
     
     console.log('Database seeding completed successfully');
   } catch (error) {

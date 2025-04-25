@@ -2,12 +2,16 @@
 
 import { useAuth, useSession } from "@clerk/nextjs";
 import { useEffect } from "react";
+import { useEnsureUserRecord } from "@/lib/hooks/useEnsureUserRecord";
 
 // This component actively checks and refreshes Clerk sessions
 // It's designed to be included in pages where authentication is required
 export default function SessionCheck() {
   const { getToken, isSignedIn } = useAuth();
   const { session } = useSession();
+  
+  // Use our custom hook to ensure user data is stored in MongoDB
+  useEnsureUserRecord();
 
   // Effect to periodically validate and refresh the session token
   useEffect(() => {
