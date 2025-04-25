@@ -2,20 +2,32 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@clerk/nextjs';
 
 export default function Home() {
   const router = useRouter();
+  const { isLoaded, isSignedIn } = useAuth();
   const [animationComplete, setAnimationComplete] = useState(false);
   
   useEffect(() => {
+    if (!isLoaded) {
+      return; // Wait for auth to load before proceeding
+    }
+    
     // Set a timer for the animation duration before redirecting
     const redirectTimer = setTimeout(() => {
       setAnimationComplete(true);
-      router.push('/reviews');
-    }, 500); // 2 seconds animation before redirect
+      
+      // Redirect to reviews page if user is logged in, otherwise to sign-up page
+      if (isSignedIn) {
+        router.push('/reviews');
+      } else {
+        router.push('/sign-up');
+      }
+    }, 5000); // 5 seconds animation before redirect
     
     return () => clearTimeout(redirectTimer);
-  }, [router]);
+  }, [router, isLoaded, isSignedIn]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-white dark:bg-black transition-all duration-500">
@@ -44,6 +56,11 @@ export default function Home() {
         {/* Tagline */}
         <p className="mt-4 text-gray-600 dark:text-gray-400">
           Bringing transparency to venture capital
+        </p>
+        
+        {/* Optional status message showing where the user will be redirected */}
+        <p className="mt-6 text-sm text-gray-500 dark:text-gray-500">
+          {isLoaded ? (isSignedIn ? 'Redirecting to reviews...' : 'Redirecting to sign up...') : 'Loading...'}
         </p>
       </div>
       

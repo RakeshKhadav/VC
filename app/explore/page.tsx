@@ -4,6 +4,7 @@ import ExploreFilters from "../components/ui/ExploreFilters";
 import VCCard from "@/app/components/reviews/VCCard";
 import { connectToDatabase } from "@/lib/db/mongodb";
 import VC from "@/lib/db/models/VC";
+import ExploreClientWrapper from "./client-wrapper";
 
 // Define VC data type for strong typing
 export interface VCData {
@@ -125,67 +126,70 @@ export default async function ExplorePage({
   // Fetch VCs with search params
   const { vcs, pagination } = await getVCs(searchParams);
   
+  // Wrap the page content with our authentication check component
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Explore VC Firms</h1>
-      
-      <Suspense fallback={<div>Loading filters...</div>}>
-        <ExploreFilters />
-      </Suspense>
-      
-      {/* VC Cards - Using explicit flex column layout with full width cards */}
-      {vcs.length > 0 ? (
-        <div className="flex flex-col w-full mt-6 space-y-4">
-          {vcs.map((vc) => (
-            <div key={vc._id} className="w-full">
-              <VCCard 
-                id={vc._id}
-                name={vc.name}
-                slug={vc.slug}
-                website={vc.website}
-                avgResponsiveness={vc.avgResponsiveness}
-                avgFairness={vc.avgFairness}
-                avgSupport={vc.avgSupport}
-                totalReviews={vc.totalReviews}
-                avgRating={vc.avgRating}
-                lastReviewDate={vc.lastReviewDate}
-              />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-16">
-          <h3 className="text-xl font-semibold">No VC firms found matching your filters</h3>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">Try adjusting your filter criteria or search term</p>
-        </div>
-      )}
-
-      {/* Pagination */}
-      {pagination.totalPages > 1 && (
-        <div className="mt-8 flex justify-center">
-          <div className="flex space-x-2">
-            {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(pageNum => (
-              <Link
-                key={pageNum}
-                href={{
-                  pathname: '/explore',
-                  query: {
-                    ...searchParams,
-                    page: pageNum.toString()
-                  }
-                }}
-                className={`px-4 py-2 border ${
-                  pageNum === pagination.currentPage 
-                    ? 'bg-black text-white dark:bg-white dark:text-black'
-                    : 'bg-white text-black dark:bg-gray-800 dark:text-white'
-                } rounded-md hover:bg-gray-100 dark:hover:bg-gray-700`}
-              >
-                {pageNum}
-              </Link>
+    <ExploreClientWrapper>
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-6">Explore VC Firms</h1>
+        
+        <Suspense fallback={<div>Loading filters...</div>}>
+          <ExploreFilters />
+        </Suspense>
+        
+        {/* VC Cards - Using explicit flex column layout with full width cards */}
+        {vcs.length > 0 ? (
+          <div className="flex flex-col w-full mt-6 space-y-4">
+            {vcs.map((vc) => (
+              <div key={vc._id} className="w-full">
+                <VCCard 
+                  id={vc._id}
+                  name={vc.name}
+                  slug={vc.slug}
+                  website={vc.website}
+                  avgResponsiveness={vc.avgResponsiveness}
+                  avgFairness={vc.avgFairness}
+                  avgSupport={vc.avgSupport}
+                  totalReviews={vc.totalReviews}
+                  avgRating={vc.avgRating}
+                  lastReviewDate={vc.lastReviewDate}
+                />
+              </div>
             ))}
           </div>
-        </div>
-      )}
-    </div>
+        ) : (
+          <div className="text-center py-16">
+            <h3 className="text-xl font-semibold">No VC firms found matching your filters</h3>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">Try adjusting your filter criteria or search term</p>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {pagination.totalPages > 1 && (
+          <div className="mt-8 flex justify-center">
+            <div className="flex space-x-2">
+              {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(pageNum => (
+                <Link
+                  key={pageNum}
+                  href={{
+                    pathname: '/explore',
+                    query: {
+                      ...searchParams,
+                      page: pageNum.toString()
+                    }
+                  }}
+                  className={`px-4 py-2 border ${
+                    pageNum === pagination.currentPage 
+                      ? 'bg-black text-white dark:bg-white dark:text-black'
+                      : 'bg-white text-black dark:bg-gray-800 dark:text-white'
+                  } rounded-md hover:bg-gray-100 dark:hover:bg-gray-700`}
+                >
+                  {pageNum}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </ExploreClientWrapper>
   );
 }
