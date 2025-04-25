@@ -7,6 +7,7 @@ import Header from './components/layout/Header'
 import Footer from './components/layout/Footer'
 import { NotificationProvider } from './context/NotificationContext'
 import SessionCheck from './components/auth/SessionCheck'
+import AuthRedirector from './components/auth/AuthRedirector'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -34,6 +35,7 @@ export default function RootLayout({
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}>
           <Header />
           <SessionCheck />
+          <AuthRedirector />
           <main className="flex-1 w-full bg-gray-50 dark:bg-gray-950">
             <NotificationProvider>
               {children}

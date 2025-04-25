@@ -1,33 +1,22 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@clerk/nextjs';
 
 export default function Home() {
   const router = useRouter();
-  const { isLoaded, isSignedIn } = useAuth();
-  const [animationComplete, setAnimationComplete] = useState(false);
   
+  // Always redirect to reviews page after a short animation
   useEffect(() => {
-    if (!isLoaded) {
-      return; // Wait for auth to load before proceeding
-    }
-    
     // Set a timer for the animation duration before redirecting
     const redirectTimer = setTimeout(() => {
-      setAnimationComplete(true);
-      
-      // Redirect to reviews page if user is logged in, otherwise to sign-up page
-      if (isSignedIn) {
-        router.push('/reviews');
-      } else {
-        router.push('/sign-up');
-      }
-    }, 5000); // 5 seconds animation before redirect
+      router.push('/reviews');
+    }, 500); // Short animation before redirect
     
-    return () => clearTimeout(redirectTimer);
-  }, [router, isLoaded, isSignedIn]);
+    return () => {
+      clearTimeout(redirectTimer);
+    };
+  }, [router]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-white dark:bg-black transition-all duration-500">
@@ -58,10 +47,6 @@ export default function Home() {
           Bringing transparency to venture capital
         </p>
         
-        {/* Optional status message showing where the user will be redirected */}
-        <p className="mt-6 text-sm text-gray-500 dark:text-gray-500">
-          {isLoaded ? (isSignedIn ? 'Redirecting to reviews...' : 'Redirecting to sign up...') : 'Loading...'}
-        </p>
       </div>
       
       {/* Add animation keyframes */}
