@@ -131,10 +131,13 @@ async function getVCs(searchParams: { [key: string]: string | string[] | undefin
 export default async function ExplorePage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  // Fetch VCs with search params
-  const { vcs, pagination } = await getVCs(searchParams || {});
+  // Await the searchParams Promise
+  const resolvedSearchParams = await searchParams;
+
+  // Fetch VCs with resolved search params
+  const { vcs, pagination } = await getVCs(resolvedSearchParams || {});
   
   // Wrap the page content with our authentication check component
   return (
@@ -183,7 +186,7 @@ export default async function ExplorePage({
                   href={{
                     pathname: '/explore',
                     query: {
-                      ...searchParams,
+                      ...resolvedSearchParams,
                       page: pageNum.toString()
                     }
                   }}
