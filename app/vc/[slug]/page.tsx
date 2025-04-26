@@ -53,7 +53,7 @@ async function getVCData(slug: string): Promise<VCData | null> {
     }
     
     // Use type-safe approach with known properties instead of explicit type annotation
-    const vcDoc = vcDocResult as Record<string, any>;
+    const vcDoc = vcDocResult as Record<string, unknown>;
     
     // Cast MongoDB document to VCData type with proper type safety
     return {
@@ -236,7 +236,7 @@ export default async function VCProfilePage({
   const currentPage = searchParams?.page ? parseInt(searchParams.page, 10) : 1;
   
   // Fetch reviews for this VC - using modified function that returns all reviews
-  const { reviews, totalReviews, totalPages } = await getVCReviews(slug, currentPage);
+  const { reviews, totalReviews, totalPages } = await getVCReviews(slug);
   
   // Use client component to render the full profile page
   return <VCProfileClient 
