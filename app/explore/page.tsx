@@ -135,8 +135,7 @@ export default async function ExplorePage({
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  // Await both Promises
-  const resolvedParams = await params;
+  // Await only the searchParams since params is not used
   const resolvedSearchParams = await searchParams;
 
   // Fetch VCs with resolved search params
