@@ -103,12 +103,9 @@ export async function GET(req: NextRequest) {
 // POST a new review
 export async function POST(request: NextRequest) {
   try {
-    // Get authenticated user
+    // Get authenticated user (but don't fail if not authenticated)
     const { userId } = getAuth(request);
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
+    
     // Connect to database
     await connectToDatabase();
 
@@ -131,7 +128,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Validate required fields
-    if (!vcName || !ratings || !reviewHeading || !reviewText) {
+    if (!vcName || !ratings || !reviewHeading || !reviewText || !pros || !cons) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -145,25 +142,29 @@ export async function POST(request: NextRequest) {
     if (existingVC) {
       vcId = existingVC._id;
     } else {
+      // Create slug from VC name
+      const slug = createSlug(vcName);
+      
       // Create new VC entry if it doesn't exist
       const newVC = new VC({
         name: vcName,
+        slug: slug,
         website: vcWebsite || "",
         description: "",
-        logo: "",
-        location: "",
-        foundedYear: null,
-        industries: industry ? [industry] : [],
-        numberOfReviews: 1
+        avgResponsiveness: 0,
+        avgFairness: 0,
+        avgSupport: 0,
+        totalReviews: 1,
+        lastReviewDate: new Date()
       });
       
       const savedVC = await newVC.save();
       vcId = savedVC._id;
     }
 
-    // Create new review
+    // Create new review - use userId if authenticated, otherwise use a placeholder
     const newReview = new Review({
-      userId,
+      userId: userId || "anonymous-user",
       vcName,
       vcId,
       industry,
@@ -184,7 +185,8 @@ export async function POST(request: NextRequest) {
 
     // Update VC review count
     if (existingVC) {
-      existingVC.numberOfReviews = (existingVC.numberOfReviews || 0) + 1;
+      existingVC.totalReviews = (existingVC.totalReviews || 0) + 1;
+      existingVC.lastReviewDate = new Date();
       await existingVC.save();
     }
 

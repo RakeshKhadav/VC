@@ -26,8 +26,6 @@ function ReviewFormContent() {
   // Form state management
   const [selectedVC, setSelectedVC] = useState("");
   const [companyInfo, setCompanyInfo] = useState({
-    name: "",
-    website: "",
     sector: "",
     role: "",
     location: ""
@@ -38,13 +36,14 @@ function ReviewFormContent() {
     support: 0
   });
   const [reviewDetails, setReviewDetails] = useState({
-    reviewHeading: "",
+    heading: "",
     content: "",
     pros: "",
     cons: "",
     stage: "",
     amount: "",
     year: "",
+    anonymous: true,
     terms: false
   });
   const [otherVC, setOtherVC] = useState("");
@@ -110,19 +109,14 @@ function ReviewFormContent() {
     if (!selectedVC) return false;
     if (selectedVC === 'other' && !otherVC) return false;
     
-    // Check company information
-    if (!companyInfo.sector || 
-        !companyInfo.role || !companyInfo.location) return false;
-    
     // Check ratings
     if (ratings.responsiveness === 0 || ratings.fairness === 0 || ratings.support === 0) return false;
     
-    // Check review content
-    if (!reviewDetails.reviewHeading || !reviewDetails.content || 
-        !reviewDetails.pros || !reviewDetails.cons) return false;
-    
-    // Check funding details (except amount which is optional)
-    if (!reviewDetails.stage || !reviewDetails.year) return false;
+    // Check required review fields
+    if (!reviewDetails.heading.trim()) return false;
+    if (!reviewDetails.content.trim()) return false;
+    if (!reviewDetails.pros.trim()) return false;
+    if (!reviewDetails.cons.trim()) return false;
     
     // Check terms agreement
     if (!reviewDetails.terms) return false;
@@ -166,13 +160,14 @@ function ReviewFormContent() {
           fairness: ratings.fairness,
           support: ratings.support
         },
-        reviewHeading: reviewDetails.reviewHeading,
+        reviewHeading: reviewDetails.heading,
         reviewText: reviewDetails.content,
         pros: reviewDetails.pros,
         cons: reviewDetails.cons,
         fundingStage: reviewDetails.stage,
         investmentAmount: reviewDetails.amount,
-        yearOfInteraction: reviewDetails.year
+        yearOfInteraction: reviewDetails.year,
+        isAnonymous: reviewDetails.anonymous
       };
       
       console.log("Submitting review:", reviewData);
@@ -300,11 +295,14 @@ function ReviewFormContent() {
           {/* Company Information Section */}
           <div className="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-6">
             <h3 className="text-lg font-medium">Your Company Information</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              This information helps provide context for your review. If you choose to remain anonymous, your company details will still be shown with your review.
+            </p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="company_sector" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Industry/Sector <span className="text-red-500">*</span>
+                  Industry/Sector
                 </label>
                 <select
                   id="company_sector"
@@ -312,7 +310,6 @@ function ReviewFormContent() {
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
                   value={companyInfo.sector}
                   onChange={handleCompanyInfoChange}
-                  required
                 >
                   <option value="">Select industry</option>
                   <option value="fintech">FinTech</option>
@@ -332,7 +329,7 @@ function ReviewFormContent() {
               
               <div>
                 <label htmlFor="company_role" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Your Role <span className="text-red-500">*</span>
+                  Your Role
                 </label>
                 <input
                   type="text"
@@ -342,14 +339,13 @@ function ReviewFormContent() {
                   placeholder="CEO, CTO, Founder, etc."
                   value={companyInfo.role}
                   onChange={handleCompanyInfoChange}
-                  required
                 />
               </div>
             </div>
             
             <div>
               <label htmlFor="company_location" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Location <span className="text-red-500">*</span>
+                Company Location
               </label>
               <input
                 type="text"
@@ -359,7 +355,6 @@ function ReviewFormContent() {
                 placeholder="City, Country or Region"
                 value={companyInfo.location}
                 onChange={handleCompanyInfoChange}
-                required
               />
             </div>
           </div>
@@ -451,81 +446,79 @@ function ReviewFormContent() {
           </div>
           
           {/* Review Content */}
-          <div>
-            <label htmlFor="reviewHeading" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Review Heading <span className="text-red-500">*</span>
-              <span className="block text-xs text-gray-500 dark:text-gray-400 font-normal mt-1">
-                Add a brief headline for your review
-              </span>
-            </label>
-            <input
-              type="text"
-              id="reviewHeading"
-              name="reviewHeading"
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
-              placeholder="Summarize your experience in a short headline..."
-              value={reviewDetails.reviewHeading}
-              onChange={handleReviewDetailsChange}
-              required
-            />
-          </div>
-
-          <div>
-            <label htmlFor="content" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Your Review <span className="text-red-500">*</span>
-              <span className="block text-xs text-gray-500 dark:text-gray-400 font-normal mt-1">
-                Share your experience working with this VC. What was the interaction like?
-              </span>
-            </label>
-            <textarea
-              id="content"
-              name="content"
-              rows={6}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
-              placeholder="Write your review here..."
-              value={reviewDetails.content}
-              onChange={handleReviewDetailsChange}
-              required
-            ></textarea>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-4">
+            {/* Review Heading */}
             <div>
-              <label htmlFor="pros" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Pros <span className="text-red-500">*</span>
+              <label htmlFor="heading" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Review Heading <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="heading"
+                name="heading"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                placeholder="Summarize your experience in a headline"
+                value={reviewDetails.heading}
+                onChange={handleReviewDetailsChange}
+                required
+              />
+            </div>
+
+            {/* Review Text */}
+            <div>
+              <label htmlFor="content" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Your Review <span className="text-red-500">*</span>
                 <span className="block text-xs text-gray-500 dark:text-gray-400 font-normal mt-1">
-                  What went well?
+                  Share your experience working with this VC. What was the interaction like? What went well? What could have been improved?
                 </span>
               </label>
               <textarea
-                id="pros"
-                name="pros"
-                rows={4}
+                id="content"
+                name="content"
+                rows={6}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
-                placeholder="What were the positives?"
-                value={reviewDetails.pros}
+                placeholder="Write your review here..."
+                value={reviewDetails.content}
                 onChange={handleReviewDetailsChange}
                 required
               ></textarea>
             </div>
-            
-            <div>
-              <label htmlFor="cons" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Cons <span className="text-red-500">*</span>
-                <span className="block text-xs text-gray-500 dark:text-gray-400 font-normal mt-1">
-                  What could have been improved?
-                </span>
-              </label>
-              <textarea
-                id="cons"
-                name="cons"
-                rows={4}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
-                placeholder="What were the negatives?"
-                value={reviewDetails.cons}
-                onChange={handleReviewDetailsChange}
-                required
-              ></textarea>
+
+            {/* Pros and Cons */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Pros */}
+              <div>
+                <label htmlFor="pros" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Pros <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  id="pros"
+                  name="pros"
+                  rows={4}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                  placeholder="What were the positive aspects of working with this VC?"
+                  value={reviewDetails.pros}
+                  onChange={handleReviewDetailsChange}
+                  required
+                ></textarea>
+              </div>
+
+              {/* Cons */}
+              <div>
+                <label htmlFor="cons" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Cons <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  id="cons"
+                  name="cons"
+                  rows={4}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                  placeholder="What were the challenges or drawbacks of working with this VC?"
+                  value={reviewDetails.cons}
+                  onChange={handleReviewDetailsChange}
+                  required
+                ></textarea>
+              </div>
             </div>
           </div>
           
@@ -533,7 +526,7 @@ function ReviewFormContent() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="stage" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Funding Stage <span className="text-red-500">*</span>
+                Funding Stage
               </label>
               <select
                 id="stage"
@@ -541,7 +534,6 @@ function ReviewFormContent() {
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
                 value={reviewDetails.stage}
                 onChange={handleReviewDetailsChange}
-                required
               >
                 <option value="">Select stage</option>
                 <option value="pre-seed">Pre-seed</option>
@@ -556,7 +548,7 @@ function ReviewFormContent() {
             
             <div>
               <label htmlFor="amount" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Investment Amount <span className="text-xs text-gray-500">(optional)</span>
+                Investment Amount
               </label>
               <select
                 id="amount"
@@ -581,19 +573,17 @@ function ReviewFormContent() {
           {/* Year of Interaction */}
           <div>
             <label htmlFor="year" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Year of Investment/Interaction <span className="text-red-500">*</span>
+              Year of Investment/Interaction
             </label>
             <select
-              name="year"
-              id="year"
+              name="yearOfInteraction"
+              id="yearOfInteraction"
               required
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
-              value={reviewDetails.year}
-              onChange={handleReviewDetailsChange}
+              className="w-full p-2 border rounded"
             >
               <option value="">Select a year</option>
               {yearsList.map((year) => (
-                <option key={year} value={year.toString()}>
+                <option key={year} value={year}>
                   {year}
                 </option>
               ))}

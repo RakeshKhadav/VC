@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     const userId = "test-direct-submission-user";
     
     // Validate required fields
-    const requiredFields = ['vcName', 'reviewText', 'ratings'];
+    const requiredFields = ['vcName', 'reviewHeading', 'reviewText', 'ratings', 'pros', 'cons'];
     for (const field of requiredFields) {
       if (!reviewData[field]) {
         return NextResponse.json(
@@ -75,7 +75,10 @@ export async function POST(req: NextRequest) {
         fairness: reviewData.ratings.fairness,
         support: reviewData.ratings.support
       },
+      reviewHeading: reviewData.reviewHeading,
       reviewText: reviewData.reviewText,
+      pros: reviewData.pros,
+      cons: reviewData.cons,
       fundingStage: reviewData.fundingStage,
       investmentAmount: reviewData.investmentAmount,
       yearOfInteraction: reviewData.yearOfInteraction,
