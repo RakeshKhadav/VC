@@ -220,10 +220,11 @@ export default async function VCProfilePage({
   params,
   searchParams
 }: { 
-  params: { slug: string };
-  searchParams?: { page?: string };
+  params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ page?: string }>;
 }) {
-  const slug = params.slug;
+  // Await the params Promise to get the slug
+  const { slug } = await params;
   
   // Fetch VC data from database
   const vcData = await getVCData(slug);
@@ -233,7 +234,8 @@ export default async function VCProfilePage({
   }
   
   // Get current page from query params or default to 1
-  const currentPage = searchParams?.page ? parseInt(searchParams.page, 10) : 1;
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const currentPage = resolvedSearchParams?.page ? parseInt(resolvedSearchParams.page, 10) : 1;
   
   // Fetch reviews for this VC - using modified function that returns all reviews
   const { reviews, totalReviews, totalPages } = await getVCReviews(slug);
