@@ -14,7 +14,7 @@
     "@heroui/alert": "^2.2.17",
     "@heroui/react": "^2.7.6",
     "dotenv": "^16.5.0",
-    "framer-motion": "^12.8.0",
+    "framer-motion": "^12.9.2",
     "mongodb": "^6.16.0",
     "mongoose": "^8.13.2",
     "next": "15.3.1",

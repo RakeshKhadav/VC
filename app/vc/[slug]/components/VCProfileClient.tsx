@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import StarRating from "@/app/components/ui/StarRating";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Define types for VC data
 export interface VCData {
@@ -38,6 +39,7 @@ export interface VCReview {
   fundingStage?: string;
   yearOfInteraction?: string;
   createdAt: string;
+  investmentAmount?: string; // Changed from number to string to match the data format "500k-1m"
 }
 
 // Calculate average rating from individual ratings
@@ -117,17 +119,47 @@ function ReviewsList({
                       </div>
                     </div>
                     
-                    {/* Role and Stage tags ABOVE the review title */}
-                    <div className="flex flex-wrap gap-2 mt-3 mb-1">
+                    {/* Tags row - Exactly matching the screenshot */}
+                    <div className="flex flex-wrap gap-2 mt-3 mb-2">
+                      {/* Role tag - e.g. "Founder" */}
                       {review.role && (
-                        <span className="px-3 py-0.5 bg-black dark:bg-black text-white dark:text-white rounded-full text-[10px] font-medium">
+                        <span className="px-3 py-0.5 bg-black dark:bg-black text-white dark:text-white rounded-full text-xs">
                           {review.role}
                         </span>
                       )}
                       
+                      {/* Stage tag - "Stage: seed" */}
                       {review.fundingStage && (
-                        <span className="px-3 py-0.5 bg-black dark:bg-black text-white dark:text-white rounded-full text-[10px] font-medium ml-1">
+                        <span className="px-3 py-0.5 bg-black dark:bg-black text-white dark:text-white rounded-full text-xs">
                           Stage: {review.fundingStage}
+                        </span>
+                      )}
+                      
+                      {/* Industry Tag - "Industry: saas" */}
+                      {review.industry && (
+                        <span className="px-3 py-0.5 bg-black dark:bg-black text-white dark:text-white rounded-full text-xs">
+                          Industry: {review.industry}
+                        </span>
+                      )}
+                      
+                      {/* Location Tag - "Location: sf" */}
+                      {review.companyLocation && (
+                        <span className="px-3 py-0.5 bg-black dark:bg-black text-white dark:text-white rounded-full text-xs">
+                          Location: {review.companyLocation}
+                        </span>
+                      )}
+                      
+                      {/* Investment amount tag */}
+                      {review.investmentAmount && review.investmentAmount.trim() !== "" && (
+                        <span className="px-3 py-0.5 bg-black dark:bg-black text-white dark:text-white rounded-full text-xs">
+                          Amount: {review.investmentAmount}
+                        </span>
+                      )}
+                      
+                      {/* Year of Investment Tag */}
+                      {review.yearOfInteraction && review.yearOfInteraction.trim() !== "" && (
+                        <span className="px-3 py-0.5 bg-black dark:bg-black text-white dark:text-white rounded-full text-xs">
+                          Year: {review.yearOfInteraction}
                         </span>
                       )}
                     </div>
@@ -135,87 +167,114 @@ function ReviewsList({
                     {/* Review Title - BOLD */}
                     <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-1 mb-3">{review.reviewHeading}</h3>
                     
-                    {/* Simplified Read More Button */}
+                    {/* Animated Read More Button */}
                     <div className="text-center mt-4">
-                      <button 
+                      <motion.button 
                         onClick={() => toggleReview(review._id)}
-                        className="inline-flex items-center text-black dark:text-white font-medium hover:text-gray-700 dark:hover:text-gray-300 transition-colors duration-200 focus:outline-none"
+                        className="inline-flex items-center text-black dark:text-white font-medium focus:outline-none"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 17 }}
                       >
-                        {expandedReviews[review._id] ? (
-                          <>
-                            <span>Read less</span>
-                            <svg className="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                            </svg>
-                          </>
-                        ) : (
-                          <>
-                            <span>Read more</span>
-                            <svg className="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                          </>
-                        )}
-                      </button>
+                        {expandedReviews[review._id] ? "Read less" : "Read more"}
+                        <motion.svg 
+                          className="h-5 w-5 ml-1" 
+                          fill="none" 
+                          viewBox="0 0 24 24" 
+                          stroke="currentColor"
+                          animate={{ 
+                            rotate: expandedReviews[review._id] ? 180 : 0,
+                            y: expandedReviews[review._id] ? -2 : 2
+                          }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </motion.svg>
+                      </motion.button>
                     </div>
                   </div>
                 </div>
               </div>
               
-              {/* Expanded Content - Conditionally Visible */}
-              {expandedReviews[review._id] && (
-                <div className="bg-white dark:bg-gray-800 p-5 border-t border-gray-100 dark:border-gray-700">
-                  {/* Detailed Ratings at top of read more section */}
-                  <div className="grid grid-cols-3 gap-4 text-sm mb-6">
-                    <div className="flex flex-col items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                      <span className="text-sm text-gray-600 dark:text-gray-300 mb-1">Responsiveness</span>
-                      <div className="flex items-center">
-                        <StarRating value={review.ratings.responsiveness} edit={false} size={16} />
-                        <span className="ml-1 font-medium">{review.ratings.responsiveness.toFixed(1)}</span>
+              {/* Animated Expanded Content - Conditionally Visible */}
+              <AnimatePresence>
+                {expandedReviews[review._id] && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    className="bg-white dark:bg-gray-800 overflow-hidden border-t border-gray-100 dark:border-gray-700"
+                  >
+                    <motion.div 
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.1, duration: 0.3 }}
+                      className="p-5"
+                    >
+                      {/* Detailed Ratings at top of read more section */}
+                      <div className="grid grid-cols-3 gap-4 text-sm mb-6">
+                        <div className="flex flex-col items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                          <span className="text-sm text-gray-600 dark:text-gray-300 mb-1">Responsiveness</span>
+                          <div className="flex items-center">
+                            <StarRating value={review.ratings.responsiveness} edit={false} size={16} />
+                            <span className="ml-1 font-medium">{review.ratings.responsiveness.toFixed(1)}</span>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                          <span className="text-sm text-gray-600 dark:text-gray-300 mb-1">Fairness</span>
+                          <div className="flex items-center">
+                            <StarRating value={review.ratings.fairness} edit={false} size={16} />
+                            <span className="ml-1 font-medium">{review.ratings.fairness.toFixed(1)}</span>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                          <span className="text-sm text-gray-600 dark:text-gray-300 mb-1">Support</span>
+                          <div className="flex items-center">
+                            <StarRating value={review.ratings.support} edit={false} size={16} />
+                            <span className="ml-1 font-medium">{review.ratings.support.toFixed(1)}</span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex flex-col items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                      <span className="text-sm text-gray-600 dark:text-gray-300 mb-1">Fairness</span>
-                      <div className="flex items-center">
-                        <StarRating value={review.ratings.fairness} edit={false} size={16} />
-                        <span className="ml-1 font-medium">{review.ratings.fairness.toFixed(1)}</span>
+                      
+                      {/* Review Text moved to the expanded area */}
+                      <div className="mb-6">
+                        <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                          {review.reviewText}
+                        </p>
                       </div>
-                    </div>
-                    <div className="flex flex-col items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                      <span className="text-sm text-gray-600 dark:text-gray-300 mb-1">Support</span>
-                      <div className="flex items-center">
-                        <StarRating value={review.ratings.support} edit={false} size={16} />
-                        <span className="ml-1 font-medium">{review.ratings.support.toFixed(1)}</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Review Text moved to the expanded area */}
-                  <div className="mb-6">
-                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                      {review.reviewText}
-                    </p>
-                  </div>
-                  
-                  {/* Pros and Cons */}
-                  {(review.pros || review.cons) && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
-                      {review.pros && (
-                        <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-100 dark:border-green-800">
-                          <h5 className="text-sm font-bold text-green-700 dark:text-green-400 mb-2">Pros</h5>
-                          <p className="text-sm text-gray-700 dark:text-gray-300">{review.pros}</p>
+                      
+                      {/* Pros and Cons */}
+                      {(review.pros || review.cons) && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
+                          {review.pros && (
+                            <motion.div 
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.2, duration: 0.3 }}
+                              className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-100 dark:border-green-800"
+                            >
+                              <h5 className="text-sm font-bold text-green-700 dark:text-green-400 mb-2">Pros</h5>
+                              <p className="text-sm text-gray-700 dark:text-gray-300">{review.pros}</p>
+                            </motion.div>
+                          )}
+                          {review.cons && (
+                            <motion.div 
+                              initial={{ opacity: 0, x: 10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.3, duration: 0.3 }}
+                              className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-100 dark:border-red-800"
+                            >
+                              <h5 className="text-sm font-bold text-red-700 dark:text-red-400 mb-2">Cons</h5>
+                              <p className="text-sm text-gray-700 dark:text-gray-300">{review.cons}</p>
+                            </motion.div>
+                          )}
                         </div>
                       )}
-                      {review.cons && (
-                        <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-100 dark:border-red-800">
-                          <h5 className="text-sm font-bold text-red-700 dark:text-red-400 mb-2">Cons</h5>
-                          <p className="text-sm text-gray-700 dark:text-gray-300">{review.cons}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           ))}
         </div>

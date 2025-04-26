@@ -3,6 +3,7 @@
 import StarRating from "@/app/components/ui/StarRating";
 import { useRouter } from "next/navigation";
 import Card from "@/app/components/common/Card";
+import { motion } from "framer-motion";
 
 export interface VCCardProps {
   id: string;
@@ -52,25 +53,45 @@ export default function VCCard({
       <div className="text-sm text-gray-500 dark:text-gray-400">
         {totalReviews} {totalReviews === 1 ? 'review' : 'reviews'}
       </div>
-      <button 
-        className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center transition-colors cursor-pointer"
+      <motion.button 
+        className="text-sm font-medium text-black dark:text-white hover:text-gray-700 dark:hover:text-gray-300 flex items-center transition-colors cursor-pointer"
         onClick={(e) => {
           e.stopPropagation();
           router.push(`/vc/${slug}`);
         }}
+        whileHover={{ scale: 1.05, x: 5 }}
+        whileTap={{ scale: 0.95 }}
+        transition={{ 
+          type: "spring", 
+          stiffness: 400, 
+          damping: 17 
+        }}
       >
         Explore VC
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+        <motion.svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          className="h-4 w-4 ml-1" 
+          viewBox="0 0 20 20" 
+          fill="currentColor"
+          initial={{ x: 0 }}
+          animate={{ x: [0, 3, 0] }}
+          transition={{ 
+            repeat: Infinity, 
+            repeatType: "reverse", 
+            duration: 1,
+            repeatDelay: 1
+          }}
+        >
           <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-        </svg>
-      </button>
+        </motion.svg>
+      </motion.button>
     </div>
   );
 
   return (
     <div 
       onClick={handleCardClick}
-      className="w-full transition-all hover:shadow-lg cursor-pointer"
+      className="w-full cursor-pointer"
     >
       <Card
         title={cardTitle}
