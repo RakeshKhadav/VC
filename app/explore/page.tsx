@@ -129,13 +129,11 @@ async function getVCs(searchParams: { [key: string]: string | string[] | undefin
 }
 
 export default async function ExplorePage({
-  params,
   searchParams,
 }: {
-  params: Promise<{ slug: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  // Await only the searchParams since params is not used
+  // Await only the searchParams
   const resolvedSearchParams = await searchParams;
 
   // Fetch VCs with resolved search params
