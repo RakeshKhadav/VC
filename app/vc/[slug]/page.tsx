@@ -301,154 +301,196 @@ export default async function VCProfilePage({
         </div>
       </div>
       
-      {/* Reviews Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-        <h2 className="text-xl font-bold mb-6">Reviews ({totalReviews})</h2>
+      {/* Average Rating and Reviews sections adjacent to each other */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* Average Rating Section */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+          <h2 className="text-xl font-bold mb-4">Average Rating</h2>
+          
+          <div className="flex items-center gap-3 mb-3">
+            <span className="text-4xl font-bold">
+              {calculateAverageRating({
+                responsiveness: vcData.avgResponsiveness,
+                fairness: vcData.avgFairness,
+                support: vcData.avgSupport
+              }).toFixed(1)}
+            </span>
+            <div className="flex items-center">
+              <StarRating 
+                value={calculateAverageRating({
+                  responsiveness: vcData.avgResponsiveness,
+                  fairness: vcData.avgFairness,
+                  support: vcData.avgSupport
+                })}
+                edit={false}
+                size={20}
+              />
+             
+            </div>
+          </div>
+          
+          <div className="mt-4">
+            <Link 
+              href={`/reviews/new?vc=${slug}`} 
+              className="w-full py-2 px-4 bg-black dark:bg-white text-white hover:bg-gray-800 dark:text-black rounded-lg text-center font-medium inline-block transition duration-200"
+            >
+              Write a Review
+            </Link>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-3 text-center">
+              Share your experience to help other founders make informed decisions.
+            </p>
+          </div>
+        </div>
         
-        {reviews.length > 0 ? (
-          <div className="space-y-8">
-            {reviews.map((review) => (
-              <div key={review._id} className="border-b border-gray-200 dark:border-gray-700 pb-8 last:border-0 last:pb-0">
-                <div className="mb-3">
-                  <div className="flex items-center mb-2">
-                    <StarRating 
-                      value={calculateAverageRating(review.ratings)} 
-                      edit={false} 
-                      size={20} 
-                    />
-                    <span className="ml-2 font-medium">
-                      {calculateAverageRating(review.ratings).toFixed(1)}
-                    </span>
+        {/* Reviews Section */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm md:col-span-2">
+          <h2 className="text-xl font-bold mb-6">Reviews ({totalReviews})</h2>
+          
+          {reviews.length > 0 ? (
+            <div className="space-y-8">
+              {reviews.map((review) => (
+                <div key={review._id} className="border-b border-gray-200 dark:border-gray-700 pb-8 last:border-0 last:pb-0">
+                  <div className="mb-3">
+                    <div className="flex items-center mb-2">
+                      <StarRating 
+                        value={calculateAverageRating(review.ratings)} 
+                        edit={false} 
+                        size={20} 
+                      />
+                      <span className="ml-2 font-medium">
+                        {calculateAverageRating(review.ratings).toFixed(1)}
+                      </span>
+                    </div>
+                    <h3 className="text-xl font-semibold mb-2">{review.reviewHeading}</h3>
+                    <div className="flex flex-wrap items-center text-sm text-gray-500 dark:text-gray-400">
+                      <span>{formatDate(review.createdAt)}</span>
+                      
+                      {review.role && (
+                        <>
+                          <span className="mx-2">•</span>
+                          <span>{review.role}</span>
+                        </>
+                      )}
+                      
+                      {review.fundingStage && (
+                        <>
+                          <span className="mx-2">•</span>
+                          <span>Stage: {review.fundingStage}</span>
+                        </>
+                      )}
+                      
+                      <span className="mx-2">•</span>
+                      <span>Anonymous</span>
+                    </div>
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">{review.reviewHeading}</h3>
-                  <div className="flex flex-wrap items-center text-sm text-gray-500 dark:text-gray-400">
-                    <span>{formatDate(review.createdAt)}</span>
-                    
-                    {review.role && (
-                      <>
-                        <span className="mx-2">•</span>
-                        <span>{review.role}</span>
-                      </>
-                    )}
-                    
-                    {review.fundingStage && (
-                      <>
-                        <span className="mx-2">•</span>
-                        <span>Stage: {review.fundingStage}</span>
-                      </>
-                    )}
-                    
-                    <span className="mx-2">•</span>
-                    <span>Anonymous</span>
+                  
+                  <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line mb-4">{review.reviewText}</p>
+                  
+                  {/* Pros and Cons */}
+                  {(review.pros || review.cons) && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      {review.pros && (
+                        <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                          <h5 className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 mb-1">Pros</h5>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">{review.pros}</p>
+                        </div>
+                      )}
+                      {review.cons && (
+                        <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                          <h5 className="text-sm font-semibold text-red-600 dark:text-red-400 mb-1">Cons</h5>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">{review.cons}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">Responsiveness:</span>
+                      <div className="flex items-center mt-1">
+                        <StarRating value={review.ratings.responsiveness} edit={false} size={14} />
+                        <span className="ml-1">{review.ratings.responsiveness.toFixed(1)}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">Fairness:</span>
+                      <div className="flex items-center mt-1">
+                        <StarRating value={review.ratings.fairness} edit={false} size={14} />
+                        <span className="ml-1">{review.ratings.fairness.toFixed(1)}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">Support:</span>
+                      <div className="flex items-center mt-1">
+                        <StarRating value={review.ratings.support} edit={false} size={14}/>
+                        <span className="ml-1">{review.ratings.support.toFixed(1)}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                
-                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line mb-4">{review.reviewText}</p>
-                
-                {/* Pros and Cons */}
-                {(review.pros || review.cons) && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    {review.pros && (
-                      <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
-                        <h5 className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 mb-1">Pros</h5>
-                        <p className="text-sm text-gray-700 dark:text-gray-300">{review.pros}</p>
-                      </div>
-                    )}
-                    {review.cons && (
-                      <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
-                        <h5 className="text-sm font-semibold text-red-600 dark:text-red-400 mb-1">Cons</h5>
-                        <p className="text-sm text-gray-700 dark:text-gray-300">{review.cons}</p>
-                      </div>
-                    )}
-                  </div>
-                )}
-                <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
-                  <div>
-                    <span className="text-gray-500 dark:text-gray-400">Responsiveness:</span>
-                    <div className="flex items-center mt-1">
-                      <StarRating value={review.ratings.responsiveness} edit={false} size={14} />
-                      <span className="ml-1">{review.ratings.responsiveness.toFixed(1)}</span>
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-gray-500 dark:text-gray-400">Fairness:</span>
-                    <div className="flex items-center mt-1">
-                      <StarRating value={review.ratings.fairness} edit={false} size={14} />
-                      <span className="ml-1">{review.ratings.fairness.toFixed(1)}</span>
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-gray-500 dark:text-gray-400">Support:</span>
-                    <div className="flex items-center mt-1">
-                      <StarRating value={review.ratings.support} edit={false} size={14}/>
-                      <span className="ml-1">{review.ratings.support.toFixed(1)}</span>
-                    </div>
-                  </div>
-                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-600 dark:text-gray-400">No reviews yet. Be the first to leave a review!</p>
+              <div className="mt-4">
+                <Link 
+                  href={`/reviews/new?vc=${slug}`} 
+                  className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-md text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors inline-block"
+                >
+                  Write a Review
+                </Link>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-8">
-            <p className="text-gray-600 dark:text-gray-400">No reviews yet. Be the first to leave a review!</p>
-            <div className="mt-4">
-              <Link 
-                href={`/reviews/new?vc=${slug}`} 
-                className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-md text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors inline-block"
-              >
-                Write a Review
-              </Link>
             </div>
-          </div>
-        )}
-        
-        {/* Pagination for reviews */}
-        {reviews.length > 0 && totalPages > 1 && (
-          <div className="mt-8 flex justify-center">
-            <div className="inline-flex items-center rounded-md">
-              <Link 
-                href={hasPrevPage ? `/vc/${slug}?page=${currentPage - 1}` : '#'} 
-                className={`px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-l-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 ${!hasPrevPage ? 'opacity-50 cursor-not-allowed' : ''}`}
-                aria-disabled={!hasPrevPage}
-              >
-                Previous
-              </Link>
-              
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                // Show current page and surrounding pages
-                let pageToShow: number;
-                if (totalPages <= 5) {
-                  pageToShow = i + 1;
-                } else if (currentPage <= 3) {
-                  pageToShow = i + 1;
-                } else if (currentPage >= totalPages - 2) {
-                  pageToShow = totalPages - 4 + i;
-                } else {
-                  pageToShow = currentPage - 2 + i;
-                }
+          )}
+          
+          {/* Pagination for reviews */}
+          {reviews.length > 0 && totalPages > 1 && (
+            <div className="mt-8 flex justify-center">
+              <div className="inline-flex items-center rounded-md">
+                <Link 
+                  href={hasPrevPage ? `/vc/${slug}?page=${currentPage - 1}` : '#'} 
+                  className={`px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-l-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 ${!hasPrevPage ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  aria-disabled={!hasPrevPage}
+                >
+                  Previous
+                </Link>
                 
-                return (
-                  <Link 
-                    key={pageToShow}
-                    href={`/vc/${slug}?page=${pageToShow}`}
-                    className={`px-4 py-2 border-t border-b ${i < 4 ? 'border-r' : ''} border-gray-300 dark:border-gray-600 
-                      ${currentPage === pageToShow ? 'bg-gray-50 dark:bg-gray-700 text-black dark:text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-                  >
-                    {pageToShow}
-                  </Link>
-                );
-              })}
-              
-              <Link 
-                href={hasNextPage ? `/vc/${slug}?page=${currentPage + 1}` : '#'}
-                className={`px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-r-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 ${!hasNextPage ? 'opacity-50 cursor-not-allowed' : ''}`}
-                aria-disabled={!hasNextPage}
-              >
-                Next
-              </Link>
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  // Show current page and surrounding pages
+                  let pageToShow: number;
+                  if (totalPages <= 5) {
+                    pageToShow = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageToShow = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageToShow = totalPages - 4 + i;
+                  } else {
+                    pageToShow = currentPage - 2 + i;
+                  }
+                  
+                  return (
+                    <Link 
+                      key={pageToShow}
+                      href={`/vc/${slug}?page=${pageToShow}`}
+                      className={`px-4 py-2 border-t border-b ${i < 4 ? 'border-r' : ''} border-gray-300 dark:border-gray-600 
+                        ${currentPage === pageToShow ? 'bg-gray-50 dark:bg-gray-700 text-black dark:text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                    >
+                      {pageToShow}
+                    </Link>
+                  );
+                })}
+                
+                <Link 
+                  href={hasNextPage ? `/vc/${slug}?page=${currentPage + 1}` : '#'}
+                  className={`px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-r-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 ${!hasNextPage ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  aria-disabled={!hasNextPage}
+                >
+                  Next
+                </Link>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
