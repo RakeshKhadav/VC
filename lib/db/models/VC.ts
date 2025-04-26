@@ -5,6 +5,7 @@ export interface VCDocument extends Document {
   name: string;
   slug: string;
   website?: string;
+  description?: string;
   avgResponsiveness: number;
   avgFairness: number;
   avgSupport: number;
@@ -32,6 +33,7 @@ const VCSchema = new Schema<VCDocument>(
       index: true
     },
     website: String,
+    description: String,
     avgResponsiveness: {
       type: Number,
       default: 0

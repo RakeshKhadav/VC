@@ -12,6 +12,7 @@ export interface VCData {
   name: string;
   slug: string;
   website?: string;
+  description?: string;
   avgResponsiveness: number;
   avgFairness: number;
   avgSupport: number;
@@ -24,18 +25,20 @@ export interface VCReview {
   vcId: string;
   vcName: string;
   vcSlug: string;
-  companyName?: string;
-  companyStage?: string;
+  industry?: string;
+  role?: string;
+  companyLocation?: string;
   ratings: {
     responsiveness: number;
     fairness: number;
     support: number;
   };
-  content: string;
-  stage?: string;
-  year?: string;
-  anonymous: boolean;
-  authorRole?: string;
+  reviewHeading: string;
+  reviewText: string;
+  pros?: string;
+  cons?: string;
+  fundingStage?: string;
+  yearOfInteraction?: string;
   createdAt: string;
 }
 
@@ -56,6 +59,7 @@ async function getVCData(slug: string): Promise<VCData | null> {
       name: typeof vcDoc.name === 'string' ? vcDoc.name : '',
       slug: typeof vcDoc.slug === 'string' ? vcDoc.slug : '',
       website: vcDoc.website as string | undefined,
+      description: vcDoc.description as string | undefined,
       avgResponsiveness: typeof vcDoc.avgResponsiveness === 'number' ? vcDoc.avgResponsiveness : 0,
       avgFairness: typeof vcDoc.avgFairness === 'number' ? vcDoc.avgFairness : 0,
       avgSupport: typeof vcDoc.avgSupport === 'number' ? vcDoc.avgSupport : 0,
@@ -81,10 +85,10 @@ async function getVCReviews(vcSlug: string, page = 1): Promise<{
     const limit = 5; // Show 5 reviews per page
     
     // Count total reviews for this VC
-    const totalReviews = await Review.countDocuments({ vcSlug });
+    const totalReviews = await Review.countDocuments({ vcName: vcSlug });
     
     // Fetch reviews with pagination
-    const reviewDocs = await Review.find({ vcSlug })
+    const reviewDocs = await Review.find({ vcName: vcSlug })
       .sort({ createdAt: -1 }) // Newest first
       .skip((page - 1) * limit)
       .limit(limit)
@@ -100,21 +104,23 @@ async function getVCReviews(vcSlug: string, page = 1): Promise<{
       
       return {
         _id: review._id ? review._id.toString() : '',
-        vcId: typeof review.vcId === 'string' ? review.vcId : '',
+        vcId: review.vcId ? review.vcId.toString() : '',
         vcName: typeof review.vcName === 'string' ? review.vcName : '',
-        vcSlug: typeof review.vcSlug === 'string' ? review.vcSlug : '',
-        companyName: review.companyName as string | undefined,
-        companyStage: review.companyStage as string | undefined,
+        vcSlug: vcSlug, // Use the slug from params
+        industry: review.industry as string | undefined,
+        role: review.role as string | undefined,
+        companyLocation: review.companyLocation as string | undefined,
         ratings: {
           responsiveness: typeof review.ratings?.responsiveness === 'number' ? review.ratings.responsiveness : 0,
           fairness: typeof review.ratings?.fairness === 'number' ? review.ratings.fairness : 0,
           support: typeof review.ratings?.support === 'number' ? review.ratings.support : 0
         },
-        content: typeof review.content === 'string' ? review.content : '',
-        stage: review.stage as string | undefined,
-        year: review.year as string | undefined,
-        anonymous: typeof review.anonymous === 'boolean' ? review.anonymous : false,
-        authorRole: review.authorRole as string | undefined,
+        reviewHeading: typeof review.reviewHeading === 'string' ? review.reviewHeading : '',
+        reviewText: typeof review.reviewText === 'string' ? review.reviewText : '',
+        pros: review.pros as string | undefined,
+        cons: review.cons as string | undefined,
+        fundingStage: review.fundingStage as string | undefined,
+        yearOfInteraction: review.yearOfInteraction as string | undefined,
         createdAt: review.createdAt ? 
           (typeof review.createdAt.toISOString === 'function' ? 
             review.createdAt.toISOString() : 
@@ -244,6 +250,21 @@ export default async function VCProfilePage({
         </div>
       </div>
       
+      {/* VC Description */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm mb-8">
+        <h2 className="text-xl font-bold mb-4">About {vcData.name}</h2>
+        <div className="prose dark:prose-invert max-w-none">
+          {vcData.description ? (
+            <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">{vcData.description}</p>
+          ) : (
+            <div className="text-gray-500 dark:text-gray-400 italic">
+              <p>No description available yet for {vcData.name}.</p>
+              <p className="mt-2">This section will contain information about the firm, its investment focus, portfolio highlights, and other relevant details.</p>
+            </div>
+          )}
+        </div>
+      </div>
+      
       {/* Rating Breakdown */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
@@ -299,34 +320,48 @@ export default async function VCProfilePage({
                       {calculateAverageRating(review.ratings).toFixed(1)}
                     </span>
                   </div>
+                  <h3 className="text-xl font-semibold mb-2">{review.reviewHeading}</h3>
                   <div className="flex flex-wrap items-center text-sm text-gray-500 dark:text-gray-400">
                     <span>{formatDate(review.createdAt)}</span>
                     
-                    {!review.anonymous && review.companyName && (
+                    {review.role && (
                       <>
                         <span className="mx-2">•</span>
-                        <span>{review.companyName}</span>
+                        <span>{review.role}</span>
                       </>
                     )}
                     
-                    {review.authorRole && (
+                    {review.fundingStage && (
                       <>
                         <span className="mx-2">•</span>
-                        <span>{review.authorRole}</span>
+                        <span>Stage: {review.fundingStage}</span>
                       </>
                     )}
                     
-                    {review.stage && (
-                      <>
-                        <span className="mx-2">•</span>
-                        <span>Stage: {review.stage}</span>
-                      </>
-                    )}
+                    <span className="mx-2">•</span>
+                    <span>Anonymous</span>
                   </div>
                 </div>
                 
-                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">{review.content}</p>
+                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line mb-4">{review.reviewText}</p>
                 
+                {/* Pros and Cons */}
+                {(review.pros || review.cons) && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    {review.pros && (
+                      <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                        <h5 className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 mb-1">Pros</h5>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">{review.pros}</p>
+                      </div>
+                    )}
+                    {review.cons && (
+                      <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                        <h5 className="text-sm font-semibold text-red-600 dark:text-red-400 mb-1">Cons</h5>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">{review.cons}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
                 <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">Responsiveness:</span>
@@ -345,7 +380,7 @@ export default async function VCProfilePage({
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">Support:</span>
                     <div className="flex items-center mt-1">
-                      <StarRating value={review.ratings.support} edit={false} size={14} />
+                      <StarRating value={review.ratings.support} edit={false} size={14}/>
                       <span className="ml-1">{review.ratings.support.toFixed(1)}</span>
                     </div>
                   </div>
