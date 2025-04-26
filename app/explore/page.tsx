@@ -131,10 +131,10 @@ async function getVCs(searchParams: { [key: string]: string | string[] | undefin
 export default async function ExplorePage({
   searchParams
 }: {
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams?: { [key: string]: string | string[] | undefined }
 }) {
   // Fetch VCs with search params
-  const { vcs, pagination } = await getVCs(searchParams);
+  const { vcs, pagination } = await getVCs(searchParams || {});
   
   // Wrap the page content with our authentication check component
   return (
