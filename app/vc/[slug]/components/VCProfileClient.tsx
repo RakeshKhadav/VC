@@ -63,7 +63,6 @@ interface ReviewsListProps {
 // Client component for expandable reviews
 function ReviewsList({ 
   reviews, 
-  totalReviews, 
   vcSlug, 
   currentPage, 
   totalPages, 

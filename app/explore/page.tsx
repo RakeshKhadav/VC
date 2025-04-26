@@ -33,7 +33,7 @@ async function getVCs(searchParams: { [key: string]: string | string[] | undefin
     await connectToDatabase();
     
     // Build filter object based on search params
-    const filter: any = {};
+    const filter: Record<string, unknown> = {};
     
     // Text search if query is provided
     if (query) {
@@ -78,7 +78,17 @@ async function getVCs(searchParams: { [key: string]: string | string[] | undefin
       .lean();
     
     // Add calculated average rating for each VC
-    const vcsWithAvgRating: VCData[] = vcs.map((vc: any) => {
+    const vcsWithAvgRating: VCData[] = vcs.map((vc: {
+      _id: { toString(): string };
+      name: string;
+      slug: string;
+      website?: string;
+      avgResponsiveness: number;
+      avgFairness: number;
+      avgSupport: number;
+      totalReviews: number;
+      lastReviewDate?: string;
+    }) => {
       const avgRating = (vc.totalReviews > 0 && 
                         typeof vc.avgResponsiveness === 'number' && 
                         typeof vc.avgFairness === 'number' && 

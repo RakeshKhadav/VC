@@ -26,10 +26,8 @@ interface ReviewCardProps {
 }
 
 const ReviewCard: FC<ReviewCardProps> = ({
-  id,
   vcName,
   vcSlug,
-  companyName,
   companyIndustry,
   ratings,
   reviewHeading,

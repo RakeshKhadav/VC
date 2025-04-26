@@ -1,7 +1,4 @@
-import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
-import StarRating from "@/app/components/ui/StarRating";
 import { connectToDatabase } from "@/lib/db/mongodb";
 import VC from "@/lib/db/models/VC";
 import Review from "@/lib/db/models/Review";
@@ -47,12 +44,16 @@ export interface VCReview {
 async function getVCData(slug: string): Promise<VCData | null> {
   try {
     await connectToDatabase();
-    // Use as any to handle the Mongoose document type issues
-    const vcDoc: any = await VC.findOne({ slug }).lean();
     
-    if (!vcDoc) {
+    // Fetch the document first without type assertion
+    const vcDocResult = await VC.findOne({ slug }).lean();
+    
+    if (!vcDocResult) {
       return null;
     }
+    
+    // Use type-safe approach with known properties instead of explicit type annotation
+    const vcDoc = vcDocResult as Record<string, any>;
     
     // Cast MongoDB document to VCData type with proper type safety
     return {
@@ -74,7 +75,7 @@ async function getVCData(slug: string): Promise<VCData | null> {
 }
 
 // Fetch reviews for a VC from MongoDB
-async function getVCReviews(vcSlug: string, page = 1): Promise<{
+async function getVCReviews(vcSlug: string, currentPage = 1): Promise<{
   reviews: VCReview[];
   totalReviews: number;
   currentPage: number;
@@ -86,10 +87,7 @@ async function getVCReviews(vcSlug: string, page = 1): Promise<{
     // First, get the VC document to get its ID - with explicit type casting to avoid TypeScript errors
     const vcDocResult = await VC.findOne({ slug: vcSlug }).lean();
     
-    // Cast the Mongoose result to a type we can work with
-    const vcDoc = vcDocResult as any;
-    
-    if (!vcDoc) {
+    if (!vcDocResult) {
       console.error(`VC with slug ${vcSlug} not found`);
       return {
         reviews: [],
@@ -98,6 +96,9 @@ async function getVCReviews(vcSlug: string, page = 1): Promise<{
         totalPages: 0
       };
     }
+    
+    // Use type-safe approach with known properties
+    const vcDoc = vcDocResult as Record<string, unknown>;
     
     // Safely access properties with type checks
     const vcId = vcDoc._id ? vcDoc._id.toString() : '';
@@ -129,7 +130,27 @@ async function getVCReviews(vcSlug: string, page = 1): Promise<{
       .lean();
     
     // Cast to array explicitly to avoid TypeScript errors
-    const reviewDocs = reviewDocsResult as any[];
+    const reviewDocs = reviewDocsResult as Array<{
+      _id?: { toString(): string };
+      vcId?: string | { toString(): string };
+      vcName?: string;
+      vcSlug?: string;
+      industry?: string;
+      role?: string;
+      companyLocation?: string;
+      ratings?: {
+        responsiveness: number;
+        fairness: number;
+        support: number;
+      };
+      reviewHeading?: string;
+      reviewText?: string;
+      pros?: string;
+      cons?: string;
+      fundingStage?: string;
+      yearOfInteraction?: string;
+      createdAt?: string | Date;
+    }>;
     
     console.log(`Retrieved ${reviewDocs.length} review documents for VC ${vcSlug}`);
     
