@@ -103,138 +103,100 @@ export async function GET(req: NextRequest) {
 // POST a new review
 export async function POST(request: NextRequest) {
   try {
-    // Extract authentication details from the request
-    const auth = getAuth(request);
-    const { userId } = auth;
-    
-    // Get an anonymous ID if not authenticated
-    const submitterId = userId || `anon-${Date.now()}`;
-    
-    console.log("Processing review submission from:", userId ? "Authenticated user" : "Anonymous user");
-    
-    // Handle the request data as a Promise in Next.js 15
-    const reviewData = await request.json();
+    // Get authenticated user
+    const { userId } = getAuth(request);
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Connect to database
     await connectToDatabase();
-    
-    console.log("Connected to database");
-    
+
+    // Parse request body
+    const body = await request.json();
+    const {
+      vcName,
+      vcWebsite,
+      industry,
+      role,
+      companyLocation,
+      ratings,
+      reviewHeading,
+      reviewText,
+      pros,
+      cons,
+      fundingStage,
+      investmentAmount,
+      yearOfInteraction
+    } = body;
+
     // Validate required fields
-    const requiredFields = ['vcName', 'reviewText', 'ratings'];
-    for (const field of requiredFields) {
-      if (!reviewData[field]) {
-        console.log(`Missing required field: ${field}`);
-        return NextResponse.json(
-          { error: `Missing required field: ${field}` },
-          { status: 400 }
-        );
-      }
-    }
-    
-    // Create or retrieve VC entry
-    const vcSlug = createSlug(reviewData.vcName);
-    let vc = await VC.findOne({ slug: vcSlug });
-    
-    if (!vc) {
-      console.log("Creating new VC entry:", reviewData.vcName);
-      vc = new VC({
-        name: reviewData.vcName,
-        slug: vcSlug,
-        website: reviewData.vcWebsite || '',
-        avgResponsiveness: 0,
-        avgFairness: 0, 
-        avgSupport: 0,
-        totalReviews: 0,
-        lastReviewDate: new Date()
-      });
-      
-      await vc.save();
-      console.log("New VC saved with ID:", vc._id);
-    } else {
-      console.log("Using existing VC with ID:", vc._id);
-    }
-    
-    // Create new review
-    const review = new Review({
-      userId: submitterId,
-      vcName: reviewData.vcName,
-      vcId: vc._id,
-      companyName: reviewData.companyName,
-      companyWebsite: reviewData.companyWebsite,
-      industry: reviewData.industry,
-      role: reviewData.role,
-      companyLocation: reviewData.companyLocation,
-      ratings: {
-        responsiveness: reviewData.ratings.responsiveness,
-        fairness: reviewData.ratings.fairness,
-        support: reviewData.ratings.support
-      },
-      reviewText: reviewData.reviewText,
-      fundingStage: reviewData.fundingStage,
-      investmentAmount: reviewData.investmentAmount,
-      yearOfInteraction: reviewData.yearOfInteraction,
-      isAnonymous: reviewData.isAnonymous ?? true
-    });
-    
-    console.log("Saving review to database");
-    try {
-      await review.save();
-      console.log("Review saved successfully with ID:", review._id);
-    } catch (saveError) {
-      console.error("Error saving review:", saveError);
+    if (!vcName || !ratings || !reviewHeading || !reviewText) {
       return NextResponse.json(
-        { error: "Failed to save review to database" },
-        { status: 500 }
+        { error: "Missing required fields" },
+        { status: 400 }
       );
     }
+
+    // Check for existing VC or create new one
+    let vcId;
+    const existingVC = await VC.findOne({ name: { $regex: new RegExp(`^${vcName}$`, 'i') } });
     
-    // Update VC's rating averages
-    const allVCReviews = await Review.find({ vcId: vc._id });
-    const totalReviews = allVCReviews.length;
-    
-    // Calculate new averages
-    const avgRatings = allVCReviews.reduce(
-      (acc, review) => {
-        return {
-          responsiveness: acc.responsiveness + review.ratings.responsiveness,
-          fairness: acc.fairness + review.ratings.fairness,
-          support: acc.support + review.ratings.support
-        };
-      },
-      { responsiveness: 0, fairness: 0, support: 0 }
-    );
-    
-    // Update VC document
-    try {
-      await VC.findByIdAndUpdate(vc._id, {
-        avgResponsiveness: +(avgRatings.responsiveness / totalReviews).toFixed(1),
-        avgFairness: +(avgRatings.fairness / totalReviews).toFixed(1),
-        avgSupport: +(avgRatings.support / totalReviews).toFixed(1),
-        totalReviews,
-        lastReviewDate: new Date()
+    if (existingVC) {
+      vcId = existingVC._id;
+    } else {
+      // Create new VC entry if it doesn't exist
+      const newVC = new VC({
+        name: vcName,
+        website: vcWebsite || "",
+        description: "",
+        logo: "",
+        location: "",
+        foundedYear: null,
+        industries: industry ? [industry] : [],
+        numberOfReviews: 1
       });
-      console.log("VC ratings updated successfully");
-    } catch (updateError) {
-      console.error("Error updating VC ratings:", updateError);
-      // We'll still return success since the review was saved
+      
+      const savedVC = await newVC.save();
+      vcId = savedVC._id;
     }
-    
-    return NextResponse.json({ 
-      success: true,
-      review: review
-    }, { status: 201 });
-    
-  } catch (error: unknown) {
+
+    // Create new review
+    const newReview = new Review({
+      userId,
+      vcName,
+      vcId,
+      industry,
+      role,
+      companyLocation,
+      ratings,
+      reviewHeading,
+      reviewText,
+      pros,
+      cons,
+      fundingStage,
+      investmentAmount,
+      yearOfInteraction
+    });
+
+    // Save review to database
+    const savedReview = await newReview.save();
+
+    // Update VC review count
+    if (existingVC) {
+      existingVC.numberOfReviews = (existingVC.numberOfReviews || 0) + 1;
+      await existingVC.save();
+    }
+
+    // Return success response
+    return NextResponse.json({
+      message: "Review created successfully",
+      reviewId: savedReview._id
+    });
+  } catch (error) {
     console.error("Error creating review:", error);
-    
-    // More detailed error logging for debugging
-    let errorMessage = "Failed to create review";
-    if (error instanceof Error) {
-      errorMessage = `${errorMessage}: ${error.message}`;
-      console.error("Error stack:", error.stack);
-    }
-    
     return NextResponse.json(
-      { error: errorMessage },
+      { error: "Error creating review" },
       { status: 500 }
     );
   }

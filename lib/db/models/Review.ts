@@ -12,17 +12,17 @@ export interface ReviewDocument extends Document {
   userId: string;
   vcName: string;
   vcId?: mongoose.Types.ObjectId;
-  companyName?: string;
-  companyWebsite?: string;
   industry?: string;
   role?: string;
   companyLocation?: string;
   ratings: Ratings;
+  reviewHeading: string;
   reviewText: string;
+  pros?: string;
+  cons?: string;  
   fundingStage?: string;
   investmentAmount?: string;
   yearOfInteraction?: string;
-  isAnonymous: boolean;
   createdAt: Date;
   updatedAt: Date;
   
@@ -47,8 +47,6 @@ const ReviewSchema = new Schema<ReviewDocument>(
       ref: 'VC',
       index: true
     },
-    companyName: String,
-    companyWebsite: String,
     industry: String,
     role: String,
     companyLocation: String,
@@ -72,17 +70,19 @@ const ReviewSchema = new Schema<ReviewDocument>(
         max: 5
       }
     },
+    reviewHeading: {
+      type: String,
+      required: true
+    },
     reviewText: {
       type: String,
       required: true
     },
+    pros: String,
+    cons: String,
     fundingStage: String,
     investmentAmount: String,
-    yearOfInteraction: String,
-    isAnonymous: {
-      type: Boolean,
-      default: true
-    }
+    yearOfInteraction: String
   },
   { 
     timestamps: true,
@@ -100,7 +100,10 @@ ReviewSchema.virtual('averageRating').get(function() {
 // Index for text search
 ReviewSchema.index({ 
   vcName: 'text', 
-  reviewText: 'text', 
+  reviewHeading: 'text',
+  reviewText: 'text',
+  pros: 'text',
+  cons: 'text',
   industry: 'text',
   companyLocation: 'text'
 });

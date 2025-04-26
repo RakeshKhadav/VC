@@ -79,27 +79,7 @@ export default function Header() {
                 }}
                 afterSignOutUrl="/reviews"
               />
-              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 hidden group-hover:block">
-                <NavigationLink 
-                  href="/dashboard" 
-                  className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  Dashboard
-                </NavigationLink>
-                <NavigationLink 
-                  href="/user-profile" 
-                  className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  Your Profile
-                </NavigationLink>
-                <NavigationLink 
-                  href="/user-profile" 
-                  onClick={() => (document.querySelector('button[aria-label="My Reviews"]') as HTMLElement)?.click()}
-                  className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  Your Reviews
-                </NavigationLink>
-              </div>
+              
             </div>
           </>
         ) : (

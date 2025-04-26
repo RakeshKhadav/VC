@@ -109,7 +109,7 @@ export default function ReviewsPage() {
       
       {/* Filter options */}
       <form onSubmit={handleSearch} className="mb-6 flex flex-col md:flex-row justify-between gap-4">
-        <div className="w-full md:w-1/2">
+        <div className="w-full md:w-full lg:w-full">
           <div className="relative">
             <input
               type="text"
@@ -128,7 +128,7 @@ export default function ReviewsPage() {
         </div>
         
         <div className="flex gap-4 items-center">
-          <div className="w-full md:w-auto">
+          <div className="w-full md:w-full">
             <select
               name="sortBy"
               value={sortOption}
@@ -140,12 +140,7 @@ export default function ReviewsPage() {
               <option value="name">Alphabetical</option>
             </select>
           </div>
-          <button 
-            type="submit"
-            className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-md font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
-          >
-            Search
-          </button>
+          
         </div>
       </form>
       
