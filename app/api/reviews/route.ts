@@ -183,11 +183,41 @@ export async function POST(request: NextRequest) {
     // Save review to database
     const savedReview = await newReview.save();
 
-    // Update VC review count
+    // Update VC with new average ratings and review count
     if (existingVC) {
-      existingVC.totalReviews = (existingVC.totalReviews || 0) + 1;
+      // Get all reviews for this VC to calculate new averages
+      const vcReviews = await Review.find({ vcId: existingVC._id });
+      const totalReviews = vcReviews.length;
+      
+      // Calculate new averages from all reviews
+      const avgRatings = vcReviews.reduce(
+        (acc, review) => {
+          return {
+            responsiveness: acc.responsiveness + review.ratings.responsiveness,
+            fairness: acc.fairness + review.ratings.fairness,
+            support: acc.support + review.ratings.support
+          };
+        },
+        { responsiveness: 0, fairness: 0, support: 0 }
+      );
+      
+      // Update the VC document with new values
+      existingVC.avgResponsiveness = +(avgRatings.responsiveness / totalReviews).toFixed(1);
+      existingVC.avgFairness = +(avgRatings.fairness / totalReviews).toFixed(1);
+      existingVC.avgSupport = +(avgRatings.support / totalReviews).toFixed(1);
+      existingVC.totalReviews = totalReviews;
       existingVC.lastReviewDate = new Date();
+      
       await existingVC.save();
+    } else {
+      // For new VCs, update with initial review ratings
+      const newVC = await VC.findById(vcId);
+      if (newVC) {
+        newVC.avgResponsiveness = ratings.responsiveness;
+        newVC.avgFairness = ratings.fairness;
+        newVC.avgSupport = ratings.support;
+        await newVC.save();
+      }
     }
 
     // Return success response

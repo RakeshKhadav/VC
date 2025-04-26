@@ -39,9 +39,9 @@ export default function VCCard({
           edit={false}
           size={24}
         />
-        {/* <span className="ml-2 font-semibold text-gray-800 dark:text-gray-200">
-          {avgRating?.toFixed(1) || "N/A"}
-        </span> */}
+        <span className="ml-2 font-semibold text-gray-800 dark:text-gray-200">
+          {avgRating ? avgRating.toFixed(1) : "N/A"}
+        </span>
       </div>
     </div>
   );
@@ -53,7 +53,7 @@ export default function VCCard({
         {totalReviews} {totalReviews === 1 ? 'review' : 'reviews'}
       </div>
       <button 
-        className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center transition-colors"
+        className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center transition-colors cursor-pointer"
         onClick={(e) => {
           e.stopPropagation();
           router.push(`/vc/${slug}`);
