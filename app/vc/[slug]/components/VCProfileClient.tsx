@@ -115,7 +115,6 @@ function ReviewsList({
                       {/* Right side - Star Rating */}
                       <div className="flex items-center">
                         <StarRating value={calculateReviewRating(review.ratings)} edit={false} size={18} />
-                        <span className="ml-1 text-lg font-semibold">{calculateReviewRating(review.ratings).toFixed(1)}</span>
                       </div>
                     </div>
                     
@@ -167,31 +166,30 @@ function ReviewsList({
                     {/* Review Title - BOLD */}
                     <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-1 mb-3">{review.reviewHeading}</h3>
                     
-                    {/* Animated Read More Button */}
-                    <div className="text-center mt-4">
-                      <motion.button 
-                        onClick={() => toggleReview(review._id)}
-                        className="inline-flex items-center text-black dark:text-white font-medium focus:outline-none"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                      >
-                        {expandedReviews[review._id] ? "Read less" : "Read more"}
-                        <motion.svg 
-                          className="h-5 w-5 ml-1" 
-                          fill="none" 
-                          viewBox="0 0 24 24" 
-                          stroke="currentColor"
-                          animate={{ 
-                            rotate: expandedReviews[review._id] ? 180 : 0,
-                            y: expandedReviews[review._id] ? -2 : 2
-                          }}
-                          transition={{ duration: 0.3 }}
+                    {/* Read More Button - Only shown in collapsed state */}
+                    {!expandedReviews[review._id] && (
+                      <div className="text-center mt-4">
+                        <motion.button 
+                          onClick={() => toggleReview(review._id)}
+                          className="inline-flex items-center text-black dark:text-white font-medium focus:outline-none"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 17 }}
                         >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </motion.svg>
-                      </motion.button>
-                    </div>
+                          Read more
+                          <motion.svg 
+                            className="h-5 w-5 ml-1" 
+                            fill="none" 
+                            viewBox="0 0 24 24" 
+                            stroke="currentColor"
+                            animate={{ y: 2 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </motion.svg>
+                        </motion.button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -218,21 +216,18 @@ function ReviewsList({
                           <span className="text-sm text-gray-600 dark:text-gray-300 mb-1">Responsiveness</span>
                           <div className="flex items-center">
                             <StarRating value={review.ratings.responsiveness} edit={false} size={16} />
-                            <span className="ml-1 font-medium">{review.ratings.responsiveness.toFixed(1)}</span>
                           </div>
                         </div>
                         <div className="flex flex-col items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                           <span className="text-sm text-gray-600 dark:text-gray-300 mb-1">Fairness</span>
                           <div className="flex items-center">
                             <StarRating value={review.ratings.fairness} edit={false} size={16} />
-                            <span className="ml-1 font-medium">{review.ratings.fairness.toFixed(1)}</span>
                           </div>
                         </div>
                         <div className="flex flex-col items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                           <span className="text-sm text-gray-600 dark:text-gray-300 mb-1">Support</span>
                           <div className="flex items-center">
                             <StarRating value={review.ratings.support} edit={false} size={16} />
-                            <span className="ml-1 font-medium">{review.ratings.support.toFixed(1)}</span>
                           </div>
                         </div>
                       </div>
@@ -246,7 +241,7 @@ function ReviewsList({
                       
                       {/* Pros and Cons */}
                       {(review.pros || review.cons) && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                           {review.pros && (
                             <motion.div 
                               initial={{ opacity: 0, x: -10 }}
@@ -271,6 +266,29 @@ function ReviewsList({
                           )}
                         </div>
                       )}
+                      
+                      {/* Read Less Button - Now at the bottom of expanded content */}
+                      <div className="text-center mt-2">
+                        <motion.button 
+                          onClick={() => toggleReview(review._id)}
+                          className="inline-flex items-center text-black dark:text-white font-medium focus:outline-none"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                        >
+                          Read less
+                          <motion.svg 
+                            className="h-5 w-5 ml-1" 
+                            fill="none" 
+                            viewBox="0 0 24 24" 
+                            stroke="currentColor"
+                            animate={{ y: -2 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                          </motion.svg>
+                        </motion.button>
+                      </div>
                     </motion.div>
                   </motion.div>
                 )}
@@ -419,13 +437,7 @@ export default function VCProfileClient({
                   size={24}
                 />
               </div>
-              <span className="ml-2 text-lg font-medium">
-                {calculateAverageRating({
-                  responsiveness: vcData.avgResponsiveness,
-                  fairness: vcData.avgFairness,
-                  support: vcData.avgSupport
-                }).toFixed(1)}
-              </span>
+              
               <span className="mx-2 text-gray-400">|</span>
               <span className="text-gray-600 dark:text-gray-300">{vcData.totalReviews} reviews</span>
             </div>
@@ -465,7 +477,6 @@ export default function VCProfileClient({
             <div className="flex flex-1">
               <StarRating value={vcData.avgResponsiveness} edit={false} size={24} />
             </div>
-            <span className="text-xl font-medium ml-2">{vcData.avgResponsiveness.toFixed(1)}</span>
           </div>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">How quickly they respond to communications and requests</p>
         </div>
@@ -476,7 +487,6 @@ export default function VCProfileClient({
             <div className="flex flex-1">
               <StarRating value={vcData.avgFairness} edit={false} size={24} />
             </div>
-            <span className="text-xl font-medium ml-2">{vcData.avgFairness.toFixed(1)}</span>
           </div>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">How fair their term sheets and negotiations are</p>
         </div>
@@ -487,7 +497,6 @@ export default function VCProfileClient({
             <div className="flex flex-1">
               <StarRating value={vcData.avgSupport} edit={false} size={24} />
             </div>
-            <span className="text-xl font-medium ml-2">{vcData.avgSupport.toFixed(1)}</span>
           </div>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">The level of support and guidance provided post-investment</p>
         </div>
@@ -517,9 +526,7 @@ export default function VCProfileClient({
                 edit={false}
                 size={20}
               />
-              <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
-                {vcData.totalReviews} {vcData.totalReviews === 1 ? 'Review' : 'Reviews'}
-              </span>
+              
             </div>
           </div>
           

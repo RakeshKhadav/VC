@@ -38,11 +38,9 @@ export default function VCCard({
         <StarRating 
           value={avgRating || 0} 
           edit={false}
-          size={24}
+          size={25}
         />
-        <span className="ml-2 font-semibold text-gray-800 dark:text-gray-200">
-          {avgRating ? avgRating.toFixed(1) : "N/A"}
-        </span>
+       
       </div>
     </div>
   );
