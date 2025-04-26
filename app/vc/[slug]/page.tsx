@@ -75,7 +75,7 @@ async function getVCData(slug: string): Promise<VCData | null> {
 }
  
 // Fetch reviews for a VC from MongoDB
-async function getVCReviews(vcSlug: string, currentPage = 1): Promise<{
+async function getVCReviews(vcSlug: string): Promise<{
   reviews: VCReview[];
   totalReviews: number;
   currentPage: number;
