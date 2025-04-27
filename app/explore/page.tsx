@@ -78,17 +78,7 @@ async function getVCs(searchParams: { [key: string]: string | string[] | undefin
       .lean();
     
     // Add calculated average rating for each VC
-    const vcsWithAvgRating: VCData[] = vcs.map((vc: {
-      _id: { toString(): string };
-      name: string;
-      slug: string;
-      website?: string;
-      avgResponsiveness: number;
-      avgFairness: number;
-      avgSupport: number;
-      totalReviews: number;
-      lastReviewDate?: string;
-    }) => {
+    const vcsWithAvgRating: VCData[] = vcs.map((vc) => {
       const avgRating = (vc.totalReviews > 0 && 
                         typeof vc.avgResponsiveness === 'number' && 
                         typeof vc.avgFairness === 'number' && 
@@ -100,7 +90,7 @@ async function getVCs(searchParams: { [key: string]: string | string[] | undefin
         ...vc,
         _id: vc._id.toString(),
         avgRating
-      };
+      } as VCData;
     });
     
     return {
