@@ -78,7 +78,7 @@ async function getVCs(searchParams: { [key: string]: string | string[] | undefin
       .lean();
     
     // Add calculated average rating for each VC
-    const vcsWithAvgRating: VCData[] = vcs.map((vc: any) => {
+    const vcsWithAvgRating: VCData[] = vcs.map((vc) => {
       // Ensure the vc object has all required properties
       if (!vc.name || !vc.slug || typeof vc.avgResponsiveness !== 'number' || 
           typeof vc.avgFairness !== 'number' || typeof vc.avgSupport !== 'number' ||
@@ -86,7 +86,7 @@ async function getVCs(searchParams: { [key: string]: string | string[] | undefin
         console.error('VC document is missing required properties:', vc);
       }
       
-      const avgRating = (vc.totalReviews > 0 && 
+      const avgRating = (vc.totalReviews && vc.totalReviews > 0 && 
                         typeof vc.avgResponsiveness === 'number' && 
                         typeof vc.avgFairness === 'number' && 
                         typeof vc.avgSupport === 'number')
@@ -95,7 +95,7 @@ async function getVCs(searchParams: { [key: string]: string | string[] | undefin
       
       // Explicitly construct the return object with all required properties from VCData
       return {
-        _id: vc._id.toString(),
+        _id: typeof vc._id === 'object' && vc._id !== null ? vc._id.toString() : String(vc._id),
         name: vc.name || '',
         slug: vc.slug || '',
         website: vc.website,
