@@ -66,7 +66,25 @@ async function getVCData(slug: string): Promise<VCData | null> {
       avgFairness: typeof vcDoc.avgFairness === 'number' ? vcDoc.avgFairness : 0,
       avgSupport: typeof vcDoc.avgSupport === 'number' ? vcDoc.avgSupport : 0,
       totalReviews: typeof vcDoc.totalReviews === 'number' ? vcDoc.totalReviews : 0,
-      lastReviewDate: vcDoc.lastReviewDate ? new Date(vcDoc.lastReviewDate) : undefined
+      lastReviewDate: vcDoc.lastReviewDate ? 
+        (
+          // Handle specific case when it's an empty object {}
+          typeof vcDoc.lastReviewDate === 'object' && 
+          Object.keys(vcDoc.lastReviewDate).length === 0 ? 
+            undefined : 
+            // Otherwise try normal Date conversion for valid date values
+            (
+              vcDoc.lastReviewDate instanceof Date ? 
+                vcDoc.lastReviewDate : 
+                (
+                  typeof vcDoc.lastReviewDate === 'string' || 
+                  typeof vcDoc.lastReviewDate === 'number' ? 
+                    new Date(vcDoc.lastReviewDate) : 
+                    undefined
+                )
+            )
+        ) : 
+        undefined
     };
   } catch (error) {
     console.error("Error fetching VC data:", error);
